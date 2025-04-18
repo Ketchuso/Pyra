@@ -13,6 +13,7 @@ from config import app, db, api
 
 # Views go here!
 
+#for auth, implement flask-login and then maybe implement google-auth later
 @app.route('/')
 def index():
     return '<h1>Project Server</h1>'
