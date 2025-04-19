@@ -11,6 +11,8 @@ from sqlalchemy import MetaData, event
 from sqlalchemy.engine import Engine
 from flask_bcrypt import Bcrypt
 
+import os
+
 
 
 # Enable foreign key support in SQLite
@@ -40,6 +42,8 @@ db.init_app(app)
 # Instantiate REST API
 api = Api(app)
 bcrypt = Bcrypt()
+
+app.config['SECRET_KEY'] = os.urandom(24) 
 
 # Instantiate CORS
 CORS(app)
