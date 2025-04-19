@@ -9,6 +9,9 @@ from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData, event
 from sqlalchemy.engine import Engine
+from flask_bcrypt import Bcrypt
+
+
 
 # Enable foreign key support in SQLite
 @event.listens_for(Engine, "connect")
@@ -36,6 +39,7 @@ db.init_app(app)
 
 # Instantiate REST API
 api = Api(app)
+bcrypt = Bcrypt()
 
 # Instantiate CORS
 CORS(app)
