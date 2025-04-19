@@ -13,14 +13,6 @@ class TimestampMixin:
     created_at = db.Column(db.DateTime, default=get_utc_now)
     updated_at = db.Column(db.DateTime, default=get_utc_now, onupdate=get_utc_now)
 
-    def to_dict(self):
-        data = {column.name: getattr(self, column.name) for column in self.__table__.columns}
-        # Custom datetime formatting
-        if data.get('created_at'):
-            data['created_at'] = data['created_at'].strftime('%Y-%m-%d %H:%M')
-        if data.get('updated_at'):
-            data['updated_at'] = data['updated_at'].strftime('%Y-%m-%d %H:%M')
-        return data
 
 # =====================
 # Models
@@ -43,13 +35,15 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
 
 
 # User Model
-class User(db.Model, SerializerMixin, TimestampMixin):
+class User(db.Model, SerializerMixin):
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, nullable=False, unique=True)
     email = db.Column(db.String, nullable=False, unique=True)
     _password_hash = db.Column(db.String, nullable=False)
+
+    created_at = db.Column(db.DateTime, default=get_utc_now)
 
     # Relationships
     articles = db.relationship('Article', back_populates='user')
@@ -72,6 +66,9 @@ class User(db.Model, SerializerMixin, TimestampMixin):
         # Password length rule
         if len(password.strip()) < 6:
             raise ValueError("Password has to be at least 6 characters long")
+        
+        if not re.search(r'[a-z]', password):
+            raise ValueError("Password must have at least one lowercase letter")
 
         # At least one uppercase letter
         if not re.search(r'[A-Z]', password):
