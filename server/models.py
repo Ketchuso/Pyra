@@ -1,9 +1,9 @@
 from sqlalchemy_serializer import SerializerMixin
-from sqlalchemy.ext.associationproxy import association_proxy
 from datetime import datetime, timezone
 from sqlalchemy.ext.hybrid import hybrid_property
 from config import db, bcrypt
 from werkzeug.security import generate_password_hash, check_password_hash
+import re
 
 def get_utc_now():
     return datetime.now(timezone.utc)
@@ -14,13 +14,12 @@ class TimestampMixin:
     updated_at = db.Column(db.DateTime, default=get_utc_now, onupdate=get_utc_now)
 
     def to_dict(self):
-        """Convert model instance to dictionary with custom datetime formatting."""
         data = {column.name: getattr(self, column.name) for column in self.__table__.columns}
         # Custom datetime formatting
         if data.get('created_at'):
-            data['created_at'] = data['created_at'].strftime('%Y-%m-%d %H:%M:%S')  # Example: 2025-04-18 15:30:00
+            data['created_at'] = data['created_at'].strftime('%Y-%m-%d %H:%M')
         if data.get('updated_at'):
-            data['updated_at'] = data['updated_at'].strftime('%Y-%m-%d %H:%M:%S')  # Example: 2025-04-18 15:30:00
+            data['updated_at'] = data['updated_at'].strftime('%Y-%m-%d %H:%M')
         return data
 
 # =====================
@@ -66,6 +65,27 @@ class User(db.Model, SerializerMixin, TimestampMixin):
 
     @password_hash.setter
     def password_hash(self, password):
+        # Check if the password is empty or only contains whitespace
+        if not password or not password.strip():
+            raise ValueError("Password can't be blank")
+
+        # Password length rule
+        if len(password.strip()) < 6:
+            raise ValueError("Password has to be at least 6 characters long")
+
+        # At least one uppercase letter
+        if not re.search(r'[A-Z]', password):
+            raise ValueError("Password must have at least one uppercase letter")
+
+        # At least one digit
+        if not re.search(r'\d', password):
+            raise ValueError("Password must have at least one number")
+
+        # No spaces allowed in the password
+        if ' ' in password:
+            raise ValueError("Password cannot have spaces")
+
+        # If all checks pass, hash the password
         password_hash = bcrypt.generate_password_hash(password.encode('utf-8'))
         self._password_hash = password_hash.decode("utf-8")
 
@@ -105,8 +125,6 @@ class FactCheck(db.Model, SerializerMixin):
     article = db.relationship('Article', back_populates='fact_checks')
 
     serialize_rules = ('-user.fact_checks', '-article.fact_checks')
-
-
 
 
 # Uncomment these when ready to use categories
