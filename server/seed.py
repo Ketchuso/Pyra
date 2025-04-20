@@ -29,8 +29,16 @@ def create_users():
 
 # Create some sample articles
 def create_articles(user1, user2):
-    article1 = Article(content="This is the first article by user1", user_id=user1.id)
-    article2 = Article(content="This is the second article by user2", user_id=user2.id)
+    article1 = Article(
+        title="First Article by User 1",  # Add title here
+        url="https://example.com/article1",  # Add a URL here
+        submitted_by_id=user1.id  # Link to user1
+    )
+    article2 = Article(
+        title="Second Article by User 2",  # Add title here
+        url="https://example.com/article2",  # Add a URL here
+        submitted_by_id=user2.id  # Link to user2
+    )
 
     db.session.add(article1)
     db.session.add(article2)
