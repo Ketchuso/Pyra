@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 function SignUp({ onLogin }) {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [errors, setErrors] = useState([]);
@@ -12,8 +13,8 @@ function SignUp({ onLogin }) {
     setErrors([]);
     setIsLoading(true);
 
-    // Trim input values before sending to backend
     const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
     const trimmedPasswordConfirmation = passwordConfirmation.trim();
 
@@ -24,6 +25,7 @@ function SignUp({ onLogin }) {
       },
       body: JSON.stringify({
         username: trimmedUsername,
+        email: trimmedEmail,
         password: trimmedPassword,
         password_confirmation: trimmedPasswordConfirmation,
       }),
@@ -53,13 +55,22 @@ function SignUp({ onLogin }) {
           onChange={(e) => setUsername(e.target.value)}
         />
 
+        <label className="labels" htmlFor="email">Email</label>
+        <input
+          type="text"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="off"
+        />
+
         <label className="labels" htmlFor="password">Password</label>
         <input
           type="password"
           id="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
+          autoComplete="new-password"
         />
 
         <label className="labels" htmlFor="password_confirmation">Password Confirmation</label>
