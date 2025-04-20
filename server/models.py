@@ -4,6 +4,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from config import db, bcrypt
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
+from flask import jsonify
 
 def get_utc_now():
     return datetime.now(timezone.utc)
@@ -60,28 +61,24 @@ class User(db.Model, SerializerMixin):
 
     @password_hash.setter
     def password_hash(self, password):
-        # Check if the password is empty or only contains whitespace
+        errors = []
+
         if not password or not password.strip():
-            raise ValueError("Password can't be blank")
+            errors.append("Please enter a password.")
+        else:
+            if len(password.strip()) < 6:
+                errors.append("Password must be at least 6 characters long.")
+            if not re.search(r'[a-z]', password):
+                errors.append("Include at least one lowercase letter (a–z).")
+            if not re.search(r'[A-Z]', password):
+                errors.append("Include at least one uppercase letter (A–Z).")
+            if not re.search(r'\d', password):
+                errors.append("Include at least one number (0–9).")
+            if ' ' in password:
+                errors.append("Passwords cannot contain spaces.")
 
-        # Password length rule
-        if len(password.strip()) < 6:
-            raise ValueError("Password has to be at least 6 characters long")
-        
-        if not re.search(r'[a-z]', password):
-            raise ValueError("Password must have at least one lowercase letter")
-
-        # At least one uppercase letter
-        if not re.search(r'[A-Z]', password):
-            raise ValueError("Password must have at least one uppercase letter")
-
-        # At least one digit
-        if not re.search(r'\d', password):
-            raise ValueError("Password must have at least one number")
-
-        # No spaces allowed in the password
-        if ' ' in password:
-            raise ValueError("Password cannot have spaces")
+            if errors:
+                raise ValueError(''.join(errors))
 
         # If all checks pass, hash the password
         password_hash = bcrypt.generate_password_hash(password.encode('utf-8'))

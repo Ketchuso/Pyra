@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-//import { Outlet } from "react-router-dom";  // Use Outlet to render nested routes
-import Home from "../Pages/Home";
+import { Outlet } from "react-router-dom";
 import NavBar from "./NavBar";
 
 function App() {
@@ -15,10 +14,11 @@ function App() {
   }, []);
 
   return (
-    <>
-      <NavBar setUser={setUser} user={user}/>
-      <Home/>
-    </>
+    <div>
+      <NavBar />
+      {/* Passing setUser to the AuthLayout through Outlet */}
+      <Outlet context={{ onLogin: setUser }} />
+    </div>
   );
 }
 

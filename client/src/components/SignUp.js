@@ -12,12 +12,12 @@ function SignUp({ onLogin }) {
     e.preventDefault();
     setErrors([]);
     setIsLoading(true);
-
+  
     const trimmedUsername = username.trim();
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
     const trimmedPasswordConfirmation = passwordConfirmation.trim();
-
+  
     fetch("/signup", {
       method: "POST",
       headers: {
@@ -29,18 +29,23 @@ function SignUp({ onLogin }) {
         password: trimmedPassword,
         password_confirmation: trimmedPasswordConfirmation,
       }),
-    }).then((r) => {
-      setIsLoading(false);
-      if (r.ok) {
-        r.json().then((user) => onLogin(user));
-      } else {
-        r.json().then((err) => {
-          const formattedErrors = err.errors || [err.error] || ["An unknown error occurred"];
-          setErrors(formattedErrors);
-        });
-      }
-    });
+    })
+      .then(response => {
+        setIsLoading(false);
+        return response.json()
+      })
+      .then(data => {
+        if (data.error){
+          alert(data.error);
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        alert("Something went wrong.");
+      })
   }
+  
+  
 
   return (
     <div className="form-container">
