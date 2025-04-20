@@ -14,21 +14,14 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      {
-        path: "/", // Home page
-        element: <Home />,
-      },
-      {
-        path: "/auth", // Auth layout (login/signup)
-        element: <AuthLayout />,
-      },
-      {
-        path: "/settings:id",
-        element: <Settings />,
-      },
+      { path: "/", element: <Home /> },
+      { path: "/auth", element: <AuthLayout /> },
+      { path: "/settings/:id", element: <Settings /> },
     ],
   },
 ]);
+
+
 
 const container = document.getElementById("root");
 const root = createRoot(container);

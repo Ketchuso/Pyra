@@ -16,18 +16,25 @@ from models import Article, User, Comment, FactCheck
 class Signup(Resource):
     def post(self):
         data = request.get_json()
-        user = User(username=data["username"], email = data['email'])
-        user.password_hash = data['password']
-        db.session.add(user)
-        db.session.commit()
+        try:
+            user = User(username=data["username"], email=data["email"])
+            user.password_hash = data["password"]
+            db.session.add(user)
+            db.session.commit()
+        except ValueError as ve:
+            return {"error": str(ve)}, 400
+        except Exception as e:
+            db.session.rollback()
+            return {"error": "Something went wrong on the server."}, 500
 
-        stay_signed_in = data.get('stay_signed_in', False)
+        stay_signed_in = data.get("stay_signed_in", False)
         session.permanent = stay_signed_in
         if stay_signed_in:
             app.permanent_session_lifetime = timedelta(days=30)
-        session['user_id'] = user.id
+        session["user_id"] = user.id
 
         return user.to_dict(), 201
+
 
 class CheckSession(Resource):
     def get(self):
