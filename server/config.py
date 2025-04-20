@@ -13,16 +13,6 @@ from flask_bcrypt import Bcrypt
 
 import os
 
-
-
-# Enable foreign key support in SQLite
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    if isinstance(dbapi_connection, sqlite3.Connection):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON;")
-        cursor.close()
-
 # Local imports
 
 # Instantiate app, set attributes
@@ -39,11 +29,19 @@ db = SQLAlchemy(metadata=metadata)
 migrate = Migrate(app, db)
 db.init_app(app)
 
+# Enable foreign key support in SQLite (After app and db initialization)
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.close()
+
 # Instantiate REST API
 api = Api(app)
 bcrypt = Bcrypt()
 
-app.config['SECRET_KEY'] = os.urandom(24) 
+app.config['SECRET_KEY'] = os.urandom(24)
 
 # Instantiate CORS
 CORS(app)

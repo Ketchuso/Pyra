@@ -23,11 +23,12 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
     __tablename__ = "article"
 
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(150), nullable=False)
+    url = db.Column(db.String(255), nullable=False)
+    submitted_by_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True)
 
     # Relationships
-    user = db.relationship('User', back_populates='articles')
+    submitted_by = db.relationship('User', back_populates='submitted_articles')
     comments = db.relationship('Comment', back_populates='article', cascade='all, delete-orphan')
     fact_checks = db.relationship('FactCheck', back_populates='article', cascade='all, delete-orphan')
 
@@ -39,14 +40,14 @@ class User(db.Model, SerializerMixin):
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, nullable=False, unique=True)
-    email = db.Column(db.String, nullable=False, unique=True)
+    username = db.Column(db.String(30), nullable=False, unique=True)
+    email = db.Column(db.String(64), nullable=False, unique=True)
     _password_hash = db.Column(db.String, nullable=False)
 
     created_at = db.Column(db.DateTime, default=get_utc_now)
 
     # Relationships
-    articles = db.relationship('Article', back_populates='user')
+    submitted_articles = db.relationship('Article', back_populates='submitted_by')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     fact_checks = db.relationship('FactCheck', back_populates='user', passive_deletes=True)
 
@@ -95,9 +96,9 @@ class Comment(db.Model, SerializerMixin, TimestampMixin):
     __tablename__ = "comment"
 
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    article_id = db.Column(db.Integer, db.ForeignKey('article.id'), nullable=False)
+    content = db.Column(db.String(1000), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
+    article_id = db.Column(db.Integer, db.ForeignKey('article.id', ondelete='CASCADE'), nullable=False)
 
     # Relationships
     user = db.relationship('User', back_populates='comments')
@@ -112,11 +113,11 @@ class FactCheck(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     verified_status = db.Column(db.Boolean, nullable=False)
-    source = db.Column(db.String, nullable=False)
-    fact_check_url = db.Column(db.String)
+    content = db.Column(db.String(2000), nullable=True)
+    source = db.Column(db.String(150), nullable=False)
+    fact_check_url = db.Column(db.String(255), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
-    article_id = db.Column(db.Integer, db.ForeignKey('article.id'), nullable=False)
-
+    article_id = db.Column(db.Integer, db.ForeignKey('article.id', ondelete='CASCADE'), nullable=False)
     # Relationships
     user = db.relationship('User', back_populates='fact_checks')
     article = db.relationship('Article', back_populates='fact_checks')
