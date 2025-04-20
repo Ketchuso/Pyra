@@ -12,21 +12,39 @@ from config import app, db, api
 # Add your model imports
 from models import Article, User, Comment, FactCheck
 
+import traceback
+
 # Views go here!
+
 class Signup(Resource):
     def post(self):
         data = request.get_json()
+
+        username = data.get("username", "").strip()
+        email = data.get("email", "").strip()
+        password = data.get("password", "").strip()
+        password_confirmation = data.get("password_confirmation", "").strip()
+
+        if not all([username, email, password, password_confirmation]):
+            return {"error": "All fields are required."}, 400
+
+        if password != password_confirmation:
+            return {"error": "Passwords do not match."}, 400
+
         try:
-            user = User(username=data["username"], email=data["email"])
-            user.password_hash = data["password"]
+            user = User(username=username, email=email)
+            user.password_hash = password  # This should trigger any validation logic
             db.session.add(user)
             db.session.commit()
         except ValueError as ve:
             return {"error": str(ve)}, 400
         except Exception as e:
             db.session.rollback()
+            print("Server Error:", e)  # Make sure this prints!
+            traceback.print_exc()
             return {"error": "Something went wrong on the server."}, 500
 
+        # Set up session
         stay_signed_in = data.get("stay_signed_in", False)
         session.permanent = stay_signed_in
         if stay_signed_in:
@@ -34,6 +52,7 @@ class Signup(Resource):
         session["user_id"] = user.id
 
         return user.to_dict(), 201
+
 
 
 class CheckSession(Resource):
