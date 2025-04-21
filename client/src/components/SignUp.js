@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+import { useOutletContext, useNavigate } from "react-router-dom";
 
-function SignUp({ onLogin, toggle }) {
+function SignUp({ toggle }) {
+  const { onLogin } = useOutletContext();
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,19 +36,21 @@ function SignUp({ onLogin, toggle }) {
     })
       .then((response) => {
         setIsLoading(false);
-        return response.json();
-      })
-      .then((data) => {
-        if (data.error) {
-          alert(data.error);
-        } else {
-          onLogin(data);
+        if (response.ok) {
+          response.json().then(user => onLogin(user))
+          navigate("/?filter=news&sort=hot")
+        }
+        else{
+          response.json().then((err) =>{
+            const safeErrors = err.errors || [err.error] || ["An unknown error occured"];
+            setErrors(safeErrors);
+          })
         }
       })
       .catch((error) => {
         console.error("Error:", error);
         alert("Something went wrong.");
-      });
+      });    
   }
 
   return (
@@ -56,6 +62,7 @@ function SignUp({ onLogin, toggle }) {
           type="text"
           id="username"
           autoComplete="off"
+          placeholder="Username..."
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
@@ -64,6 +71,7 @@ function SignUp({ onLogin, toggle }) {
         <input
           type="text"
           id="email"
+          placeholder="email..."
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="off"
@@ -72,6 +80,7 @@ function SignUp({ onLogin, toggle }) {
         <label className="labels" htmlFor="password">Password</label>
         <input
           type="password"
+          placeholder="password..."
           id="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -82,6 +91,7 @@ function SignUp({ onLogin, toggle }) {
         <input
           type="password"
           id="password_confirmation"
+          placeholder="password confirmation..."
           value={passwordConfirmation}
           onChange={(e) => setPasswordConfirmation(e.target.value)}
           autoComplete="current-password"

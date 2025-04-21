@@ -10,7 +10,7 @@ function Home() {
     return (
         <>
             <div class="main-page-contents">
-            <h2>{`${filter[0].toUpperCase() + filter.slice(1)} Posts - ${sort[0].toUpperCase() + sort.slice(1)}`}</h2>
+                <h2>{`${filter[0].toUpperCase() + filter.slice(1)} Posts - ${sort[0].toUpperCase() + sort.slice(1)}`}</h2>
             </div>
         </>
     )

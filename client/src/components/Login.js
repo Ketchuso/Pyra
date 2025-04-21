@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+import { useOutletContext, useNavigate } from "react-router-dom";
 
-function Login({ onLogin, toggle }) {
+function Login({ toggle }) {
+  const { onLogin } = useOutletContext();
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState([]);
@@ -27,7 +31,11 @@ function Login({ onLogin, toggle }) {
     }).then((r) => {
       setIsLoading(false);
       if (r.ok) {
-        r.json().then((user) => onLogin(user));
+        r.json().then((user) =>{ 
+          onLogin(user)
+          navigate("/?filter=news&sort=hot")
+        });
+        
       } else {
         r.json().then((err) => {
           const formattedErrors = err.errors || [err.error] || ["Login failed"];
@@ -45,6 +53,7 @@ function Login({ onLogin, toggle }) {
         <input
           type="text"
           id="username"
+          placeholder="username..."
           autoComplete="off"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -54,6 +63,7 @@ function Login({ onLogin, toggle }) {
         <input
           type="password"
           id="password"
+          placeholder="password..."
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
