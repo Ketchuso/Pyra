@@ -1,11 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 
 function NavBar({ setUser, user }) {
   const navigate = useNavigate();
   const location = useLocation();
+  
 
+  const params = new URLSearchParams(location.search);
+  const currentFilter = params.get("filter") || "news";
   const isAuthPage = location.pathname === "/auth";
+
+  useEffect(() => {
+    if (location.pathname === "/" && !params.get("filter")) {
+      navigate("/?filter=news&sort=hot", { replace: true });
+    }
+  }, [location, navigate, params]);
+
 
   function handleLogoutClick() {
     fetch("/logout", { method: "DELETE" }).then((r) => {
@@ -19,59 +29,71 @@ function NavBar({ setUser, user }) {
     navigate("/auth");
   }
 
-  if (user) {
-    return (
-      <>
-        <nav>
+  return (
+    <>
+      <nav className="nav-container">
+      
+        <NavLink to={`/`} id="nav-logo">
+            Pyra
+        </NavLink>
+
+        <div>
+          <NavLink
+            to="/?filter=uplifting&sort=hot"
+            className="nav-text"
+            style={{
+              color: currentFilter === "uplifting" ? "var(--main-color)" : "var(--text-color)",
+              textDecoration: "none",
+            }}
+          >
+            Uplifting
+          </NavLink>
+
+          <NavLink
+            to="/?filter=news&sort=hot"
+            className="nav-text"
+            style={{
+              color: currentFilter === "news" ? "var(--main-color)" : "var(--text-color)",
+              textDecoration: "none",
+            }}
+          >
+            News
+          </NavLink>
+        </div>
+        
+        <div>
+        {user && (
+          <NavLink to={`/settings/${user.id}`} id="settings">
+            Settings
+          </NavLink>
+        )}
+
+        {user ? (
           <button
             id="logout"
-            className="button-class logout"
+            className="auth button-class"
             variant="outline"
             onClick={handleLogoutClick}
           >
             Logout
           </button>
-        </nav>
-
-        <nav className="nav-container">
-          <NavLink to={`/settings/${user.id}`} id="settings">
-          </NavLink>
-          <NavLink to="/?filter=uplifting&sort=hot" className="nav-text">
-            Uplifting
-          </NavLink>
-          <NavLink to="/?filter=news&sort=hot" className="nav-text">
-            News
-          </NavLink>
-        </nav>
-      </>
-    );
-  } else {
-    return (
-      <>
-        <nav>
-          {!isAuthPage && (
+        ) : (
+          !isAuthPage && (
             <button
               id="login"
-              className="button-class login"
+              className="auth button-class"
               variant="outline"
               onClick={handleLoginClick}
             >
               Login
             </button>
-          )}
-        </nav>
+          )
+        )}
+        </div>
 
-        <nav className="nav-container">
-          <NavLink to="/?filter=uplifting&sort=hot" className="nav-text">
-            Uplifting
-          </NavLink>
-          <NavLink to="/?filter=news&sort=hot" className="nav-text">
-            News
-          </NavLink>
-        </nav>
-      </>
-    );
-  }
+      </nav>
+    </>
+  );
 }
 
 export default NavBar;

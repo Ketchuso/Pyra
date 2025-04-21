@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function SignUp({ onLogin }) {
+function SignUp({ onLogin, toggle }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,12 +12,12 @@ function SignUp({ onLogin }) {
     e.preventDefault();
     setErrors([]);
     setIsLoading(true);
-  
+
     const trimmedUsername = username.trim();
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
     const trimmedPasswordConfirmation = passwordConfirmation.trim();
-  
+
     fetch("/signup", {
       method: "POST",
       headers: {
@@ -30,22 +30,22 @@ function SignUp({ onLogin }) {
         password_confirmation: trimmedPasswordConfirmation,
       }),
     })
-      .then(response => {
+      .then((response) => {
         setIsLoading(false);
-        return response.json()
+        return response.json();
       })
-      .then(data => {
-        if (data.error){
+      .then((data) => {
+        if (data.error) {
           alert(data.error);
+        } else {
+          onLogin(data);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error:", error);
         alert("Something went wrong.");
-      })
+      });
   }
-  
-  
 
   return (
     <div className="form-container">
@@ -97,6 +97,8 @@ function SignUp({ onLogin }) {
           ))}
         </div>
       </form>
+
+      {toggle}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function Login({ onLogin }) {
+function Login({ onLogin, toggle }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState([]);
@@ -39,7 +39,7 @@ function Login({ onLogin }) {
 
   return (
     <div className="form-container">
-      <h1>Login</h1>
+      <h1 id="login">Login</h1>
       <form onSubmit={handleSubmit}>
         <label className="labels" htmlFor="username">Username</label>
         <input
@@ -73,6 +73,8 @@ function Login({ onLogin }) {
           ))}
         </div>
       </form>
+      
+      {toggle}
     </div>
   );
 }
