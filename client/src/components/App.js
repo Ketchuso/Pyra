@@ -15,7 +15,7 @@ function App() {
 
   return (
     <div>
-      <NavBar />
+      <NavBar user={user} setUser={setUser}/>
       {/* Passing setUser to the AuthLayout through Outlet */}
       <Outlet context={{ onLogin: setUser }} />
     </div>

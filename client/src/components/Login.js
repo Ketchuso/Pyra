@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+import { useOutletContext, useNavigate } from "react-router-dom";
 
-function Login({ onLogin }) {
+function Login({ toggle }) {
+  const { onLogin } = useOutletContext();
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState([]);
@@ -27,7 +31,11 @@ function Login({ onLogin }) {
     }).then((r) => {
       setIsLoading(false);
       if (r.ok) {
-        r.json().then((user) => onLogin(user));
+        r.json().then((user) =>{ 
+          onLogin(user)
+          navigate("/?filter=news&sort=hot")
+        });
+        
       } else {
         r.json().then((err) => {
           const formattedErrors = err.errors || [err.error] || ["Login failed"];
@@ -39,12 +47,13 @@ function Login({ onLogin }) {
 
   return (
     <div className="form-container">
-      <h1>Login</h1>
+      <h1 id="login">Login</h1>
       <form onSubmit={handleSubmit}>
         <label className="labels" htmlFor="username">Username</label>
         <input
           type="text"
           id="username"
+          placeholder="username..."
           autoComplete="off"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -54,6 +63,7 @@ function Login({ onLogin }) {
         <input
           type="password"
           id="password"
+          placeholder="password..."
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -73,6 +83,8 @@ function Login({ onLogin }) {
           ))}
         </div>
       </form>
+      
+      {toggle}
     </div>
   );
 }
