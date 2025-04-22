@@ -8,83 +8,89 @@ from faker import Faker
 
 # Local imports
 from app import app
-from models import db
+from models import db, User, Article, Comment, FactCheck
 from datetime import datetime
-from app import db  
-from models import User, Article, Comment, FactCheck  # Import your models here
 
-# Create some sample users
+fake = Faker()
+
+# Create sample users
 def create_users():
     user1 = User(username="user1", email="user1@example.com")
-    user1._password_hash = "Password1"  # Use the setter to hash the password
-    
-    user2 = User(username="user2", email="user2@example.com")
-    user2._password_hash = "Password2"  # Use the setter to hash the password
+    user1.password_hash = "Password1"  # This uses the secure setter
 
-    db.session.add(user1)
-    db.session.add(user2)
+    user2 = User(username="user2", email="user2@example.com")
+    user2.password_hash = "Password2"
+
+    db.session.add_all([user1, user2])
     db.session.commit()
 
     return user1, user2
 
-# Create some sample articles
+# Create sample articles
 def create_articles(user1, user2):
     article1 = Article(
-        title="First Article by User 1",  # Add title here
-        url="https://example.com/article1",  # Add a URL here
-        submitted_by_id=user1.id  # Link to user1
+        title="Divided Supreme Court finds some deadline flexibility for immigrants who agree to leave US",
+        url="https://apnews.com/article/supreme-court-immigration-deadlines-6cba58871ea6dfac7325326ff1f8d5b8",
+        image_url="https://dims.apnews.com/dims4/default/d59cb8f/2147483647/strip/true/crop/4500x2998+0+1/resize/980x653!/format/webp/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fcf%2F79%2F5bf6b2192813ed8b3cb5d90d212f%2F3d9d0d587d6343848e759ae90b09b2d3",
+        submitted_by_id=user1.id
     )
     article2 = Article(
-        title="Second Article by User 2",  # Add title here
-        url="https://example.com/article2",  # Add a URL here
-        submitted_by_id=user2.id  # Link to user2
+        title="What to know about the severe storms and flash flooding hitting parts of the US",
+        url="https://apnews.com/article/severe-weather-flooding-tornado-5031aa5a5ebeec0e50c1b753acd81bf0",
+        image_url="https://dims.apnews.com/dims4/default/43516db/2147483647/strip/true/crop/4032x3024+0+0/resize/1440x1080!/format/webp/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fc9%2Ffe%2F9200fb30d53b0e66f31fc6f76d1e%2Fbc66fb898784405f97cecbcd2d6e5c18",
+        submitted_by_id=user2.id
     )
 
-    db.session.add(article1)
-    db.session.add(article2)
+    db.session.add_all([article1, article2])
     db.session.commit()
 
     return article1, article2
 
-# Create some sample comments
+# Create sample comments
 def create_comments(user1, user2, article1, article2):
     comment1 = Comment(content="Great article!", user_id=user1.id, article_id=article1.id)
     comment2 = Comment(content="I disagree with this article.", user_id=user2.id, article_id=article2.id)
 
-    db.session.add(comment1)
-    db.session.add(comment2)
+    db.session.add_all([comment1, comment2])
     db.session.commit()
 
-# Create some sample fact checks
+# Create sample fact checks
 def create_fact_checks(user1, article1, article2):
-    fact_check1 = FactCheck(verified_status=True, source="https://example.com", fact_check_url="https://example.com/fact_check_1", user_id=user1.id, article_id=article1.id)
-    fact_check2 = FactCheck(verified_status=False, source="https://example.com", fact_check_url="https://example.com/fact_check_2", user_id=user1.id, article_id=article2.id)
+    fact_check1 = FactCheck(
+        fact_check_level=4,  # Verified
+        content="This article has been verified with multiple sources.",
+        source="https://example.com/source1",
+        fact_check_url="https://example.com/fact_check_1",
+        user_id=user1.id,
+        article_id=article1.id
+    )
+    fact_check2 = FactCheck(
+        fact_check_level=1,  # Misleading
+        content="This article contains misleading statements.",
+        source="https://example.com/source2",
+        fact_check_url="https://example.com/fact_check_2",
+        user_id=user1.id,
+        article_id=article2.id
+    )
 
-    db.session.add(fact_check1)
-    db.session.add(fact_check2)
+    db.session.add_all([fact_check1, fact_check2])
     db.session.commit()
 
 # Main function to run the seed script
 def run_seed():
-    with app.app_context():  # Make sure you're within the app context
-        print("Starting seed...")
+    with app.app_context():
+        print("Seeding database...")
 
-        # Drop all tables if they exist before creating new ones
+        # Drop all tables
         db.drop_all()
 
-        # Initialize the database and create tables
+        # Create all tables
         db.create_all()
 
-        # Create users
+        # Populate with data
         user1, user2 = create_users()
-
-        # Create articles
         article1, article2 = create_articles(user1, user2)
-
-        # Create comments
         create_comments(user1, user2, article1, article2)
-
-        # Create fact checks
         create_fact_checks(user1, article1, article2)
 
         print("Database seeded successfully!")

@@ -14,16 +14,34 @@ class TimestampMixin:
     created_at = db.Column(db.DateTime, default=get_utc_now)
     updated_at = db.Column(db.DateTime, default=get_utc_now, onupdate=get_utc_now)
 
+    def to_dict(self):
+        result = super().to_dict() if hasattr(super(), "to_dict") else {}
+        result["created_at"] = self.created_at.isoformat() if self.created_at else None
+        result["updated_at"] = self.updated_at.isoformat() if self.updated_at else None
+        return result
+
+
+# =====================
+# Fact Check Level Dictionary
+# =====================
+FACT_CHECK_LEVELS = {
+    0: "Unverified",
+    1: "Misleading",
+    2: "Some Inaccuracy",
+    3: "Mostly Accurate",
+    4: "Verified"
+}
 
 # =====================
 # Models
 # =====================
 
-# Article Model 
+# Article Model
 class Article(db.Model, SerializerMixin, TimestampMixin):
     __tablename__ = "article"
 
     id = db.Column(db.Integer, primary_key=True)
+    image_url = db.Column(db.String(255), nullable=True)
     title = db.Column(db.String(150), nullable=False)
     url = db.Column(db.String(255), nullable=False)
     submitted_by_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True)
@@ -34,17 +52,14 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
     fact_checks = db.relationship('FactCheck', back_populates='article', cascade='all, delete-orphan')
 
     serialize_rules = (
-    '-submitted_by.submitted_articles',
-    '-submitted_by.comments',
-    '-submitted_by.fact_checks',
-    '-comments.article',
-    '-comments.user',
-    '-fact_checks.article',
-    '-fact_checks.user',
+        '-submitted_by.submitted_articles',
+        '-submitted_by.comments',
+        '-submitted_by.fact_checks',
+        '-comments.article',
+        '-comments.user',
+        '-fact_checks.article',
+        '-fact_checks.user',
     )
-
-
-
 
 # User Model
 class User(db.Model, SerializerMixin):
@@ -63,12 +78,11 @@ class User(db.Model, SerializerMixin):
     fact_checks = db.relationship('FactCheck', back_populates='user', passive_deletes=True)
 
     serialize_rules = (
-    '-_password_hash',
-    '-submitted_articles.submitted_by',
-    '-comments.user',
-    '-fact_checks.user',
+        '-_password_hash',
+        '-submitted_articles.submitted_by',
+        '-comments.user',
+        '-fact_checks.user',
     )
-
 
     # Password Handling
     @hybrid_property
@@ -103,7 +117,6 @@ class User(db.Model, SerializerMixin):
     def check_password(self, password):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
 
-
 # Comment Model
 class Comment(db.Model, SerializerMixin, TimestampMixin):
     __tablename__ = "comment"
@@ -118,35 +131,36 @@ class Comment(db.Model, SerializerMixin, TimestampMixin):
     article = db.relationship('Article', back_populates='comments')
 
     serialize_rules = (
-    '-user.comments',
-    '-article.comments',
-    )  
-
-
-
+        '-user.comments',
+        '-article.comments',
+    )
 
 # FactCheck Model
 class FactCheck(db.Model, SerializerMixin):
     __tablename__ = "fact_check"
 
     id = db.Column(db.Integer, primary_key=True)
-    verified_status = db.Column(db.Boolean, nullable=False)
+    fact_check_level = db.Column(db.Integer, nullable=False, default=0)  # Fact check level (Unverified, etc.)
     content = db.Column(db.String(2000), nullable=True)
     source = db.Column(db.String(150), nullable=False)
     fact_check_url = db.Column(db.String(255), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
     article_id = db.Column(db.Integer, db.ForeignKey('article.id', ondelete='CASCADE'), nullable=False)
+
     # Relationships
     user = db.relationship('User', back_populates='fact_checks')
     article = db.relationship('Article', back_populates='fact_checks')
+    #votes = db.relationship('FactCheckVote', back_populates='fact_check', cascade='all, delete-orphan')
 
     serialize_rules = (
-    '-user.fact_checks',
-    '-article.fact_checks',
+        '-user.fact_checks',
+        '-article.fact_checks',
+        #'-votes.fact_check',  # Exclude fact check votes from serialization
     )
 
-
-
+    @property
+    def fact_check_level_label(self):
+        return FACT_CHECK_LEVELS.get(self.fact_check_level, "Unknown")
 
 # Uncomment these when ready to use categories
 # class Category(db.Model, SerializerMixin):

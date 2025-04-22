@@ -4,13 +4,56 @@ function Home() {
     const [articles, setArticles] = useState([]); // Default to empty array
     const [loading, setLoading] = useState(true); // Track loading state
 
+    // Helper function to format the date
+    const formatDate = (dateString) => {
+        // Convert "YYYY-MM-DD HH:MM:SS" to ISO format
+        if (dateString.includes(' ')) {
+            dateString = dateString.replace(' ', 'T') + 'Z';
+        }
+    
+        const articleDate = new Date(dateString);
+        console.log("Converted date:", articleDate);
+    
+        if (isNaN(articleDate)) {
+            console.error("Invalid date");
+            return 'Invalid Date';
+        }
+    
+        const now = new Date();
+    
+        const isToday =
+            articleDate.getDate() === now.getDate() &&
+            articleDate.getMonth() === now.getMonth() &&
+            articleDate.getFullYear() === now.getFullYear();
+    
+        const isThisYear = articleDate.getFullYear() === now.getFullYear();
+    
+        const options = {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        };
+    
+        if (!isToday) {
+            options.month = 'numeric';
+            options.day = 'numeric';
+        }
+    
+        if (!isThisYear) {
+            options.year = 'numeric';
+        }
+    
+        return articleDate.toLocaleString('en-US', options);
+    };
+    
+    
+
     useEffect(() => {
         fetch("/articles", {
             method: "GET"
         })
         .then(resp => resp.json())
         .then(data => {
-            // Now directly check if data is an array
             if (Array.isArray(data)) {
                 setArticles(data);  // Set articles directly to the data received
                 console.log("Fetched Articles:", data);  // Log the fetched articles
@@ -35,20 +78,14 @@ function Home() {
                     <ul>
                         {articles.length > 0 ? (
                             articles.map((article) => (
-                                // Use a unique identifier (e.g., article.id or article.url) as the key
                                 <div className="article-container" key={article.id || article.url}>
                                     {/* Preview Image */}
-                                    <h3>{article.title}</h3>
-                                    <img className="article-image" src={article.imageUrl} alt={article.title} /> {/* Add an image URL here */}
+                                    <h3 className="article-title">{article.title}</h3>
+                                    <img className="article-image" src={article.image_url} alt={article.title} /> 
                                     {/* Bottom-aligned info */}
                                     <div className="article-info">
                                         <h3>Fact Checked:</h3>
-                                        <h3>Posted at: {article.created_at}</h3>
-                                        <h3>
-                                            <a href={article.url} target="_blank" rel="noopener noreferrer">
-                                                Link
-                                            </a>
-                                        </h3> 
+                                        <h3>Posted @{formatDate(article.created_at)}</h3>
                                     </div>
                                 </div>
                             ))
