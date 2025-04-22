@@ -52,7 +52,7 @@ function NavBar({ setUser, user }) {
     <nav className="nav-container">
       <NavLink to="/" id="nav-logo">Pyra</NavLink>
 
-      {user && isHomePage && (
+      {isHomePage && (
         <div className="filters">
           {/* Filter Buttons */}
           <NavLink

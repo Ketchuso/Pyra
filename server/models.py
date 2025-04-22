@@ -33,7 +33,17 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
     comments = db.relationship('Comment', back_populates='article', cascade='all, delete-orphan')
     fact_checks = db.relationship('FactCheck', back_populates='article', cascade='all, delete-orphan')
 
-    serialize_rules = ('-user.articles', '-comments.article', '-fact_checks.article')
+    serialize_rules = (
+    '-submitted_by.submitted_articles',
+    '-submitted_by.comments',
+    '-submitted_by.fact_checks',
+    '-comments.article',
+    '-comments.user',
+    '-fact_checks.article',
+    '-fact_checks.user',
+    )
+
+
 
 
 # User Model
@@ -52,7 +62,13 @@ class User(db.Model, SerializerMixin):
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     fact_checks = db.relationship('FactCheck', back_populates='user', passive_deletes=True)
 
-    serialize_rules = ('-_password_hash', '-articles.user', '-comments.user', '-fact_checks.user')
+    serialize_rules = (
+    '-_password_hash',
+    '-submitted_articles.submitted_by',
+    '-comments.user',
+    '-fact_checks.user',
+    )
+
 
     # Password Handling
     @hybrid_property
@@ -101,7 +117,12 @@ class Comment(db.Model, SerializerMixin, TimestampMixin):
     user = db.relationship('User', back_populates='comments')
     article = db.relationship('Article', back_populates='comments')
 
-    serialize_rules = ('-user.comments', '-article.comments')
+    serialize_rules = (
+    '-user.comments',
+    '-article.comments',
+    )  
+
+
 
 
 # FactCheck Model
@@ -119,7 +140,12 @@ class FactCheck(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates='fact_checks')
     article = db.relationship('Article', back_populates='fact_checks')
 
-    serialize_rules = ('-user.fact_checks', '-article.fact_checks')
+    serialize_rules = (
+    '-user.fact_checks',
+    '-article.fact_checks',
+    )
+
+
 
 
 # Uncomment these when ready to use categories
