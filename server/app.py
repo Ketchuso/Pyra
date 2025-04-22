@@ -89,12 +89,22 @@ class Logout(Resource):
             return make_response('', 204)
         else:
             return {"error": "Not logged in"}, 401
+        
+class Articles(Resource):
+    def get(self):
+        try:
+            articles = db.session.query(Article).all()
+            return [article.to_dict() for article in articles]
+            # return [a.to_dict(only=('id', 'title', 'url')) for a in Article.query.all()], 200
+        except Exception as e:
+            return {"error" : str(e)}, 500
 
 # Add to API
 api.add_resource(Signup, '/signup')
 api.add_resource(CheckSession, '/check_session')
 api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
+api.add_resource(Articles, '/articles')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

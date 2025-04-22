@@ -25,6 +25,11 @@ body{
   text-shadow: var(--shadow);
 }
 
+a{
+  text-decoration: none;
+  color: var(--text)
+}
+
 /* Navbar Styles */
 .nav-container {
   display: flex;
@@ -40,6 +45,7 @@ body{
   gap: 1rem;
   padding: 0 1rem; /* <-- Add horizontal space from the edges */
   padding: 1rem;
+  z-index: 1000;
 }
 
 .nav-text {
@@ -103,6 +109,7 @@ body{
   align-items: center;
   justify-content: flex-start;
   gap: 1rem;
+  margin-left: 5%;
 }
 
 /* Dropdown Styles */
@@ -170,13 +177,64 @@ body{
 /* Main Page */
 .main-page-contents {
   position: absolute;
-  top: 10%;  
+  top: 5%;  
   left: 50%;  
   transform: translateX(-50%);
-  display: flex;
+  display: flex; 
   flex-direction: column;
   align-items: center;
+  z-index: 1;
 }
+
+.article-container {
+  box-sizing: border-box; /* Include padding and border in the element's total width */
+  background-color: var(--main-color);
+  border: 4px solid black;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  max-width: 600px;
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 10%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s ease-in-out;
+}
+
+.article-container:hover{
+  transform: scale(1.1);
+  cursor:pointer;
+}
+
+
+.article-info {
+  display: flex;
+  justify-content: space-between; /* Horizontally align text items */
+  align-items: flex-end; /* Align items at the bottom of the container */
+  width: 100%;
+}
+
+.article-info h3 {
+  margin: 0 10px 0 0; /* Optional: space between the items */
+  margin-bottom: -3%;
+}
+
+.article-image {
+  width: 100%; /* Adjust based on your needs */
+  height: 500px;
+  object-fit: cover;
+  background-color: black;
+  border: 2px solid black;
+  border-radius: 5%;
+}
+
+.article-title{
+  margin-top:-1%;
+}
+
 
 /* Forms */
 .form-container {
