@@ -52,36 +52,34 @@ function NavBar({ setUser, user }) {
     <nav className="nav-container">
       <NavLink to="/" id="nav-logo">Pyra</NavLink>
 
-      {isHomePage && (
-        <div className="filters">
-          {/* Filter Buttons */}
-          <NavLink
-            to="/?filter=uplifting&sort=hot"
-            className="nav-text"
-            style={{
-              color: currentFilter === "uplifting" ? "var(--main-color)" : "var(--text-color)",
-              textDecoration: "none",
-            }}
-          >
-            Uplifting
-          </NavLink>
-          <NavLink
-            to="/?filter=news&sort=hot"
-            className="nav-text"
-            style={{
-              color: currentFilter === "news" ? "var(--main-color)" : "var(--text-color)",
-              textDecoration: "none",
-            }}
-          >
-            News
-          </NavLink>
-
-          {/* Dropdown Sort */}
+      <div className="filters">
+        {/* Filter Buttons */}
+        <NavLink
+          to="/?filter=uplifting&sort=hot"
+          className="nav-text"
+          style={{
+            color: currentFilter === "uplifting" ? "var(--main-color)" : "var(--text-color)",
+            textDecoration: "none",
+          }}
+        >
+          Uplifting
+        </NavLink>
+        
+        <NavLink
+          to="/?filter=news&sort=hot"
+          className="nav-text"
+          style={{
+            color: currentFilter === "news" ? "var(--main-color)" : "var(--text-color)",
+            textDecoration: "none",
+          }}
+        >
+          News
+        </NavLink>
+        
+        {/* Show filter only when on the homepage */}
+        {isHomePage && (
           <div className="dropdown">
-            <button
-              className="dropbtn"
-              onClick={toggleDropdown}
-            >
+            <button className="dropbtn" onClick={toggleDropdown}>
               Filter
             </button>
             {isDropdownVisible && (
@@ -93,8 +91,8 @@ function NavBar({ setUser, user }) {
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Right Side: Auth & Settings */}
       <div className="options">
@@ -105,6 +103,7 @@ function NavBar({ setUser, user }) {
             </svg>
           </NavLink>
         )}
+        
         {user ? (
           <button id="logout" className="auth button-class" onClick={handleLogoutClick}>
             Logout
