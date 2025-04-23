@@ -3,7 +3,7 @@
 # Standard library imports
 
 # Remote library imports
-from flask import request, session, make_response
+from flask import request, session, make_response, jsonify
 from flask_restful import Resource
 from datetime import timedelta
 
@@ -94,10 +94,25 @@ class Articles(Resource):
     def get(self):
         try:
             articles = db.session.query(Article).all()
-            return [article.to_dict() for article in articles]
-            # return [a.to_dict(only=('id', 'title', 'url')) for a in Article.query.all()], 200
+            return jsonify([article.to_dict() for article in articles])
         except Exception as e:
-            return {"error" : str(e)}, 500
+            return {"error": str(e)}, 500
+
+class ArticleById(Resource):
+    def get(self, id):
+        try:
+            # Fetch article by id
+            article = db.session.get(Article, id)
+            
+            if not article:
+                return jsonify({"error": "Article not found"}), 404
+            
+            # Return article data in JSON format
+            return jsonify(article.to_dict())
+        
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
 
 # Add to API
 api.add_resource(Signup, '/signup')
@@ -105,6 +120,7 @@ api.add_resource(CheckSession, '/check_session')
 api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
 api.add_resource(Articles, '/articles')
+api.add_resource(ArticleById, '/article/<int:id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

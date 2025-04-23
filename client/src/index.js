@@ -8,6 +8,7 @@ import AuthLayout from "./Pages/AuthLayout";  // Import AuthLayout
 
 import "./index.css";
 import Settings from "./Pages/Settings";
+import ArticlePage from "./Pages/ArticlePage";
 
 const router = createBrowserRouter([
   {
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/auth", element: <AuthLayout /> },
       { path: "/settings/:id", element: <Settings /> },
+      { path: "/article/:id", element:<ArticlePage/> }
     ],
   },
 ]);

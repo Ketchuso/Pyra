@@ -1,9 +1,9 @@
 /* CSS */
 :root {
-  --bg: #723D46;
+  --bg: #472D30;
   --main-color: #E26D5C;
   --secondary-color: #FFE1A8;
-  --third-color: #472D30;
+  --third-color: #723D46;
   --text: #C9CBA3;
   --shadow: 
     1px 1px 0 #000, 
@@ -214,7 +214,7 @@ a{
   padding: 20px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   max-width: 600px;
-  max-height: 600px;
+  max-height: 700px;
   overflow-y: auto;
   overflow-x: hidden;
   margin-top: 10%;
@@ -255,6 +255,97 @@ a{
   margin-top:-1%;
 }
 
+/* individual article page */
+.individual-article {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Horizontally center the content */
+  margin-top: 3%;
+  width: 100%; /* Ensure it takes the full width */
+  text-align: center; /* Optional: Align text to the center */
+}
+
+/* fact checks */
+.fact-checks {
+  display: flex;
+  flex-direction: row;
+  max-width: 98vh;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: 1rem 0;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;  /* Smooth scrolling */
+}
+
+.individual-fact-check {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  background-color: var(--main-color);
+  border: 3px solid black;
+  border-radius: 24px;
+  padding: 1rem;
+  min-width: 250px;
+  max-width: 300px;
+  max-height: 200px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
+
+/* comments */
+.comment-container {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 3px solid black;
+  border-radius: 24px;
+  width: 50%;
+  background-color: var(--main-color);
+  max-height: 50vh; /* 50% of the viewport height */
+  overflow-y: auto;
+}
+
+
+.individual-comment {
+  background-color: var(--secondary-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  border: 2px solid black;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.comment-user {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--third-color);
+  margin: 0 0 0.25rem 0;
+}
+
+.comment-content {
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--third-color);
+  text-shadow: none;
+}
+
+.comment-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.comment-meta,
+.comment-user {
+  margin-top: auto;
+  font-size: 0.9rem;
+  color: var(--third-color);
+  text-shadow: none;
+}
 
 /* Forms */
 .form-container {
