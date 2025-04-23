@@ -85,7 +85,7 @@ function Home() {
                                     {/* Bottom-aligned info */}
                                     <div className="article-info">
                                         <h3>Fact Checked:</h3>
-                                        <h3>Posted @{formatDate(article.created_at)}</h3>
+                                        <h3>Posted: {formatDate(article.created_at)}</h3>
                                     </div>
                                 </div>
                             ))

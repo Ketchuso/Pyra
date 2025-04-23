@@ -50,7 +50,10 @@ function NavBar({ setUser, user }) {
 
   return (
     <nav className="nav-container">
-      <NavLink to="/" id="nav-logo">Pyra</NavLink>
+      <NavLink to="/" id="nav-logo">
+        <img src="/images/Logo.png" alt="Logo" />
+      </NavLink>
+
 
       <div className="filters">
         {/* Filter Buttons */}
