@@ -46,6 +46,7 @@ a{
   padding: 0 1rem; /* <-- Add horizontal space from the edges */
   padding: 1rem;
   z-index: 1000;
+  overflow: visible;
 }
 
 .nav-text {
@@ -62,11 +63,30 @@ a{
 }
 
 #nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* space between text and image */
   text-decoration: none;
   color: var(--main-color);
   font-size: x-large;
   transition: transform 0.3s ease-in-out;
 }
+
+#nav-logo img {
+  height: 50px;
+  width: auto;
+  transform: scale(2); /* make it 30% bigger */
+  transform-origin: center;
+  margin-bottom: -10%;
+}
+
+
+.logo-text {
+  font-size: x-large;
+  font-weight: bold;
+}
+
+
 
 #nav-logo:hover {
   transform: scale(1.1);
