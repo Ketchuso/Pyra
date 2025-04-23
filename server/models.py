@@ -60,6 +60,11 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
         '-fact_checks.article',
         '-fact_checks.user',
     )
+    
+    def to_dict(self):
+        data = super().to_dict()
+        data['fact_checks'] = [fc.to_dict() for fc in self.fact_checks]  # <-- manually call custom FactCheck.to_dict()
+        return data
 
 # User Model
 class User(db.Model, SerializerMixin):
@@ -161,6 +166,11 @@ class FactCheck(db.Model, SerializerMixin):
     @property
     def fact_check_level_label(self):
         return FACT_CHECK_LEVELS.get(self.fact_check_level, "Unknown")
+    
+    def to_dict(self):
+        data = super().to_dict()
+        data['fact_check_level_label'] = self.fact_check_level_label
+        return data
 
 # Uncomment these when ready to use categories
 # class Category(db.Model, SerializerMixin):

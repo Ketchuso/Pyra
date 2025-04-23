@@ -15,65 +15,122 @@ fake = Faker()
 
 # Create sample users
 def create_users():
-    user1 = User(username="user1", email="user1@example.com")
-    user1.password_hash = "Password1"  # This uses the secure setter
+    users = []
+    for i in range(10):
+        user = User(
+            username=fake.user_name(),
+            email=fake.email()
+        )
+        user.password_hash = f"Password{i}"  # Uses the secure setter
+        users.append(user)
 
-    user2 = User(username="user2", email="user2@example.com")
-    user2.password_hash = "Password2"
-
-    db.session.add_all([user1, user2])
+    db.session.add_all(users)
     db.session.commit()
-
-    return user1, user2
+    return users
 
 # Create sample articles
-def create_articles(user1, user2):
-    article1 = Article(
-        title="Divided Supreme Court finds some deadline flexibility for immigrants who agree to leave US",
-        url="https://apnews.com/article/supreme-court-immigration-deadlines-6cba58871ea6dfac7325326ff1f8d5b8",
-        image_url="https://dims.apnews.com/dims4/default/d59cb8f/2147483647/strip/true/crop/4500x2998+0+1/resize/980x653!/format/webp/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fcf%2F79%2F5bf6b2192813ed8b3cb5d90d212f%2F3d9d0d587d6343848e759ae90b09b2d3",
-        submitted_by_id=user1.id
+def create_articles(users):
+    lorem_text = (
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     )
-    article2 = Article(
-        title="What to know about the severe storms and flash flooding hitting parts of the US",
-        url="https://apnews.com/article/severe-weather-flooding-tornado-5031aa5a5ebeec0e50c1b753acd81bf0",
-        image_url="https://dims.apnews.com/dims4/default/43516db/2147483647/strip/true/crop/4032x3024+0+0/resize/1440x1080!/format/webp/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fc9%2Ffe%2F9200fb30d53b0e66f31fc6f76d1e%2Fbc66fb898784405f97cecbcd2d6e5c18",
-        submitted_by_id=user2.id
-    )
+    articles = [
+        Article(
+            title=lorem_text,
+            url="https://www.reuters.com/fact-check/ai-images-flooded-disney-world-spread-online-2024-10-15/",
+            image_url="https://www.reuters.com/resizer/v2/RBHHM67HZBDHDGWNKJIIYWWZC4.jpg?auth=0326ec4968945626223b259fbc5e0faba9e7d86b7bd6b51e4a71f6a5958291a9&width=720&quality=80",
+            submitted_by_id=rc(users).id
+        ),
+        Article(
+            title=lorem_text,
+            url="https://www.reuters.com/fact-check/al-capone-soup-kitchen-image-is-ai-generated-2024-07-05/",
+            image_url="https://www.reuters.com/resizer/v2/MVXIY6Y3Y5ATDL2LM5KG2WZLAU.jpg?auth=d80c4d2b2b0f1ec860a1689ae1e51673395dfd6ce3c47a76fd0d08fde5c1b445&width=720&quality=80",
+            submitted_by_id=rc(users).id
+        ),
+        Article(
+            title=lorem_text,
+            url="https://www.reuters.com/fact-check/picture-claudia-sheinbaum-holding-menorah-was-digitally-altered-2024-06-21/",
+            image_url="https://www.reuters.com/resizer/v2/JUPGQHR5KNB7VG2BPAVVMJE5K4.jpg?auth=0bd5367d98dca0ccac19e50df7b000e20d2d8e289e0be357d974ffc070e9d3a3&width=640&quality=80",
+            submitted_by_id=rc(users).id
+        ),
+        Article(
+            title=lorem_text,
+            url="https://www.reuters.com/fact-check/plane-reflection-not-proof-image-manipulation-michigan-harris-rally-2024-08-22/",
+            image_url="https://www.reuters.com/resizer/v2/ZEPPHZCW3FEYHAHSIJINV7WSUA.jpg?auth=64f048d2d0373ba172e0c4650bc8a78c6bc9e061f7bd12ac81123825828daf74&width=720&quality=80",
+            submitted_by_id=rc(users).id
+        ),
+        Article(
+            title=lorem_text,
+            url="https://time.com/7204123/time-top-10-photos-2024/",
+            image_url="https://api.time.com/wp-content/uploads/2024/12/top-10-photos-2024-01.jpg?quality=75&w=828",
+            submitted_by_id=rc(users).id
+        ),
+        Article(
+            title=lorem_text,
+            url="https://apnews.com/article/nasa-water-moon-6",
+            image_url="https://example.com/image6.jpg",
+            submitted_by_id=rc(users).id
+        ),
+        Article(
+            title=lorem_text,
+            url="https://apnews.com/article/ai-cancer-diagnosis-7",
+            image_url="https://example.com/image7.jpg",
+            submitted_by_id=rc(users).id
+        )
+    ]
 
-    db.session.add_all([article1, article2])
+    db.session.add_all(articles)
     db.session.commit()
-
-    return article1, article2
+    return articles
 
 # Create sample comments
-def create_comments(user1, user2, article1, article2):
-    comment1 = Comment(content="Great article!", user_id=user1.id, article_id=article1.id)
-    comment2 = Comment(content="I disagree with this article.", user_id=user2.id, article_id=article2.id)
+def create_comments(users, articles):
+    lorem_text = (
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        
+    )
+    comments = []
+    for _ in range(30):
+        comment = Comment(
+            content=lorem_text,
+            user_id=rc(users).id,
+            article_id=rc(articles).id
+        )
+        comments.append(comment)
 
-    db.session.add_all([comment1, comment2])
+    db.session.add_all(comments)
     db.session.commit()
 
 # Create sample fact checks
-def create_fact_checks(user1, article1, article2):
-    fact_check1 = FactCheck(
-        fact_check_level=4,  # Verified
-        content="This article has been verified with multiple sources.",
-        source="https://example.com/source1",
-        fact_check_url="https://example.com/fact_check_1",
-        user_id=user1.id,
-        article_id=article1.id
+def create_fact_checks(users, articles):
+    lorem_text = (
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     )
-    fact_check2 = FactCheck(
-        fact_check_level=1,  # Misleading
-        content="This article contains misleading statements.",
-        source="https://example.com/source2",
-        fact_check_url="https://example.com/fact_check_2",
-        user_id=user1.id,
-        article_id=article2.id
-    )
+    fact_levels = [1, 2, 3, 4, 5]
+    fact_checks = []
 
-    db.session.add_all([fact_check1, fact_check2])
+    for article in articles:
+        for _ in range(7):
+            fact_checks.append(
+                FactCheck(
+                    fact_check_level=rc(fact_levels),
+                    content=lorem_text,
+                    source=fake.url(),
+                    fact_check_url=fake.url(),
+                    user_id=rc(users).id,
+                    article_id=article.id
+                )
+            )
+
+    db.session.add_all(fact_checks)
     db.session.commit()
 
 # Main function to run the seed script
@@ -88,10 +145,10 @@ def run_seed():
         db.create_all()
 
         # Populate with data
-        user1, user2 = create_users()
-        article1, article2 = create_articles(user1, user2)
-        create_comments(user1, user2, article1, article2)
-        create_fact_checks(user1, article1, article2)
+        users = create_users()
+        articles = create_articles(users)
+        create_comments(users, articles)
+        create_fact_checks(users, articles)
 
         print("Database seeded successfully!")
 
