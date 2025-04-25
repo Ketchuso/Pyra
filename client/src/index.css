@@ -75,9 +75,9 @@ a{
 #nav-logo img {
   height: 50px;
   width: auto;
-  transform: scale(2); /* make it 30% bigger */
+  transform: scale(1.5); /* make it 30% bigger */
   transform-origin: center;
-  margin-bottom: -10%;
+  margin-left: 25%;
 }
 
 

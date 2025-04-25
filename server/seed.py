@@ -78,6 +78,13 @@ def create_articles(users):
             url="https://apnews.com/article/ai-cancer-diagnosis-7",
             image_url="https://example.com/image7.jpg",
             submitted_by_id=rc(users).id
+        ),
+        # Post with no comments or fact checks
+        Article(
+            title="Post with no comments or fact checks",
+            url="https://snopes.com/fact-check/example-no-checks-or-comments",
+            image_url="https://example.com/no-comments-or-checks.jpg",
+            submitted_by_id=rc(users).id
         )
     ]
 
@@ -92,14 +99,13 @@ def create_comments(users, articles):
         "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
         "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
         "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-        
     )
     comments = []
     for _ in range(30):
         comment = Comment(
             content=lorem_text,
             user_id=rc(users).id,
-            article_id=rc(articles).id
+            article_id=rc(articles[:-1]).id  # Exclude the last article
         )
         comments.append(comment)
 
@@ -117,7 +123,7 @@ def create_fact_checks(users, articles):
     fact_levels = [1, 2, 3, 4, 5]
     fact_checks = []
 
-    for article in articles:
+    for article in articles[:-1]:  # Exclude the last article
         for _ in range(7):
             fact_checks.append(
                 FactCheck(

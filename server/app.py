@@ -6,11 +6,12 @@
 from flask import request, session, make_response, jsonify
 from flask_restful import Resource
 from datetime import timedelta
+# from server.tasks import update_score
 
 # Local imports
 from config import app, db, api
 # Add your model imports
-from models import Article, User, Comment, FactCheck
+from models import Article, User, Comment, FactCheck, Vote
 
 import traceback
 
@@ -113,6 +114,67 @@ class ArticleById(Resource):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+class UserById(Resource):
+    def get(self, id):
+        try:
+            user = db.session.get(User, id)
+
+            if not user:
+                return jsonify({"error": "User was not found"}), 404
+            
+            return jsonify(user.to_dict())
+        
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+class VoteResource(Resource):
+    def post(self):
+        data = request.get_json()
+        user_id = data.get("user_id")
+        votable_type = data.get("votable_type")  # 'Article', 'Comment', 'FactCheck'
+        votable_id = data.get("votable_id")
+
+        try:
+            value = int(data.get("value"))  # ✅ fixed to use data instead of request.form
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid or missing vote value"}), 400
+
+        # Validate votable_type
+        valid_types = {"Article", "Comment", "FactCheck"}
+        if votable_type not in valid_types:
+            return jsonify({"error": f"Invalid votable_type. Must be one of {valid_types}"}), 400
+
+        if value not in (-1, 0, 1):
+            return jsonify({"error": "Vote value must be +1, 0, or -1"}), 400
+
+        # Try to find existing vote
+        vote = db.session.query(Vote).filter_by(
+            user_id=user_id,
+            votable_type=votable_type,
+            votable_id=votable_id
+        ).first()
+
+        if vote:
+            vote.value = value
+        else:
+            vote = Vote(
+                user_id=user_id,
+                votable_type=votable_type,
+                votable_id=votable_id,
+                value=value
+            )
+            db.session.add(vote)
+
+        db.session.commit()
+
+        return jsonify({
+            "result": "vote recorded",
+            "votable_type": votable_type,
+            "votable_id": votable_id,
+            "value": value
+        })
+
+
 
 # Add to API
 api.add_resource(Signup, '/signup')
@@ -121,6 +183,8 @@ api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
 api.add_resource(Articles, '/articles')
 api.add_resource(ArticleById, '/article/<int:id>')
+api.add_resource(UserById, '/user/<int:id>')
+api.add_resource(VoteResource, '/vote')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

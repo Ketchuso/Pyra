@@ -15,6 +15,9 @@ flask-cors = "*"
 faker = "*"
 bcrypt = "*"
 flask-bcrypt = "*"
+celery = "*"
+redis = "*"
+redis-server = "*"
 
 [requires]
 python_full_version = "3.8.13"
