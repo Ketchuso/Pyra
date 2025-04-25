@@ -3,10 +3,12 @@ import { useParams } from "react-router-dom";
 
 function ArticlePage() {
     const { id } = useParams();
-
     const [article, setArticle] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [userMap, setUserMap] = useState({}); // Stores user_id -> user object
+    const [userMap, setUserMap] = useState({});
+    const [newVote, setNewVote] = useState(true);
+    const [votes, setVotes] = useState({ likes: 0, dislikes: 0 });
+    const [votableType, setVotableType] = useState("Article");
 
     const formatDate = (dateString) => {
         if (dateString.includes(' ')) {
@@ -84,6 +86,18 @@ function ArticlePage() {
         fetchArticleAndUsers();
     }, [id]);
 
+    useEffect(() => {
+        async function getVotes() {
+            if (!article) return; 
+            // const votableType = "Article"; 
+            const response = await fetch(`/votes/${votableType}/${id}`);
+            const data = await response.json();
+            setVotes(data);
+        }
+
+        getVotes();
+    }, [id, article, newVote]);
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -104,6 +118,7 @@ function ArticlePage() {
                     />
                     <div className="article-info">
                         <h3>{article.fact_checks[0]?.fact_check_level_label}</h3>
+                        <h3>{votes.likes} {votes.dislikes}</h3>
                         <h3>Posted: {formatDate(article.created_at)}</h3>
                     </div>
                 </div>

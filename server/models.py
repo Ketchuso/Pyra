@@ -53,7 +53,6 @@ class User(db.Model, SerializerMixin):
     submitted_articles = db.relationship('Article', back_populates='submitted_by')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     fact_checks = db.relationship('FactCheck', back_populates='user', passive_deletes=True)
-    votes = db.relationship('Vote', back_populates='user')
 
     serialize_rules = (
         '-_password_hash',
@@ -94,7 +93,7 @@ class User(db.Model, SerializerMixin):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
 
 
-class Vote(db.Model):
+class Vote(db.Model, SerializerMixin):
     __tablename__ = 'votes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -103,8 +102,6 @@ class Vote(db.Model):
     votable_id = db.Column(db.Integer, nullable=False)
     value = db.Column(db.Integer, nullable=False)  # 1 or -1
     created_at = db.Column(db.DateTime, default=get_utc_now)
-
-    user = db.relationship('User', back_populates='votes')
 
     article_votable = db.relationship(
         "Article",
@@ -125,6 +122,12 @@ class Vote(db.Model):
         back_populates='votes',
         primaryjoin="and_(foreign(Vote.votable_id) == FactCheck.id, Vote.votable_type == 'FactCheck')",
         overlaps="article_votable,comment_votable"
+    )
+
+    serialize_rules = (
+        '-article_votable.votes',
+        '-comment_votable.votes',
+        '-fact_check_votable.votes',
     )
 
     @staticmethod
@@ -156,8 +159,6 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
     overlaps="fact_check_votable,comment_votable,votes"
     )
 
-
-
     serialize_rules = (
         '-submitted_by.submitted_articles',
         '-submitted_by.comments',
@@ -166,6 +167,7 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
         '-comments.user',
         '-fact_checks.article',
         '-fact_checks.user',
+        '-votes.article_votable',
     )
 
     def to_dict(self):
