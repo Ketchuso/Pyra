@@ -26,7 +26,6 @@ FACT_CHECK_LEVELS = {
 
 # =====================
 # Mixins
-# =====================
 class TimestampMixin:
     created_at = db.Column(db.DateTime, default=get_utc_now)
     updated_at = db.Column(db.DateTime, default=get_utc_now, onupdate=get_utc_now)
@@ -37,10 +36,7 @@ class TimestampMixin:
         result["updated_at"] = self.updated_at.isoformat() if self.updated_at else None
         return result
 
-# =====================
 # Models
-# =====================
-
 class User(db.Model, SerializerMixin):
     __tablename__ = "user"
 
@@ -128,6 +124,8 @@ class Vote(db.Model, SerializerMixin):
         '-article_votable.votes',
         '-comment_votable.votes',
         '-fact_check_votable.votes',
+        '-fact_check_votable.user',
+        '-fact_check_votable.article',
     )
 
     @staticmethod
@@ -255,7 +253,6 @@ class FactCheck(db.Model, SerializerMixin):
     def to_dict(self):
         data = super().to_dict()
         data['fact_check_level_label'] = self.fact_check_level_label
-        data['votes'] = [v.to_dict() for v in self.votes]
         return data
 
     @property

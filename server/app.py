@@ -97,7 +97,6 @@ class Articles(Resource):
             articles = db.session.query(Article).all()
             return jsonify([article.to_dict() for article in articles])
         except Exception as e:
-            print("Articles route error:", e)
             return {"error": str(e)}, 500
 
 class ArticleById(Resource):
