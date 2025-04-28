@@ -128,24 +128,22 @@ class UserById(Resource):
             return jsonify({"error": str(e)}), 500
 
 class Votes(Resource):
-    def post(self):
+    def post(self, votable_type, votable_id):
         data = request.get_json()
         user_id = data.get("user_id")
-        votable_type = data.get("votable_type")  # 'Article', 'Comment', 'FactCheck'
-        votable_id = data.get("votable_id")
 
         try:
             value = int(data.get("value")) 
         except (ValueError, TypeError):
-            return jsonify({"error": "Invalid or missing vote value"}), 400
+            return {"error": "Invalid or missing vote value"}, 400
 
         # Validate votable_type
         valid_types = {"Article", "Comment", "FactCheck"}
         if votable_type not in valid_types:
-            return jsonify({"error": f"Invalid votable_type. Must be one of {valid_types}"}), 400
+            return {"error": f"Invalid votable_type. Must be one of {valid_types}"}, 400
 
         if value not in (-1, 0, 1):
-            return jsonify({"error": "Vote value must be +1, 0, or -1"}), 400
+            return {"error": "Vote value must be +1, 0, or -1"}, 400
 
 
         # Try to find existing vote
@@ -184,14 +182,14 @@ class Votes(Resource):
             value=-1
         ).count()
 
-        return jsonify({
+        return {
             "result": "vote recorded",
             "votable_type": votable_type,
             "votable_id": votable_id,
             "value": value,
             "likes": like_count,
             "dislikes": dislike_count
-        })
+        }, 200
     
     def get(self, votable_type, votable_id):
         try:
@@ -224,7 +222,7 @@ api.add_resource(Logout, '/logout')
 api.add_resource(Articles, '/articles')
 api.add_resource(ArticleById, '/article/<int:id>')
 api.add_resource(UserById, '/user/<int:id>')
-api.add_resource(Votes, '/votes', '/votes/<string:votable_type>/<int:votable_id>')
+api.add_resource(Votes, '/votes/<string:votable_type>/<int:votable_id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

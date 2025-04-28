@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 
 function ArticlePage() {
+    const { user } = useOutletContext();
     const { id } = useParams();
     const [article, setArticle] = useState(null);
     const [loading, setLoading] = useState(true);
     const [userMap, setUserMap] = useState({});
     const [newVote, setNewVote] = useState(true);
-    const [votes, setVotes] = useState({ likes: 0, dislikes: 0 });
+    const [votesMap, setVotesMap] = useState({});
     const [votableType, setVotableType] = useState("Article");
+
 
     const formatDate = (dateString) => {
         if (dateString.includes(' ')) {
@@ -88,15 +90,85 @@ function ArticlePage() {
 
     useEffect(() => {
         async function getVotes() {
-            if (!article) return; 
-            // const votableType = "Article"; 
-            const response = await fetch(`/votes/${votableType}/${id}`);
-            const data = await response.json();
-            setVotes(data);
+            if (!article) return;
+    
+            const endpoints = [
+                { type: "Article", id: article.id },
+                ...article.fact_checks.map(fc => ({ type: "FactCheck", id: fc.id })),
+                ...article.comments.map(c => ({ type: "Comment", id: c.id })),
+            ];
+    
+            const fetches = await Promise.all(
+                endpoints.map(({ type, id }) =>
+                    fetch(`/votes/${type}/${id}`)
+                        .then(res => res.json())
+                        .then(data => ({ [`${type}-${id}`]: data }))
+                        .catch(() => ({ [`${type}-${id}`]: { likes: 0, dislikes: 0 } }))
+                )
+            );
+    
+            const mergedVotes = Object.assign({}, ...fetches);
+            setVotesMap(mergedVotes);
         }
-
+    
         getVotes();
-    }, [id, article, newVote]);
+    }, [article]);
+
+    async function updateVotes(type, id, voteType) {
+        try {
+            if (!user.id) {
+                console.error('No user logged in');
+                return;
+            }
+    
+            let voteValue;
+        
+            if (voteType.toLowerCase() === 'like') {
+                voteValue = 1;
+            } else if (voteType.toLowerCase() === 'dislike') {
+                voteValue = -1;
+            } else {
+                console.error("Error: vote type invalid");
+                return;
+            }
+        
+            const key = `${type}-${id}`;
+            const previousVote = votesMap[key]?.value || 0; 
+        
+            if (previousVote === voteValue) {
+                voteValue = 0; // Clicking again cancels the vote
+            }
+        
+            const response = await fetch(`/votes/${type}/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_id: user.id, value: voteValue }),
+            });
+            
+            if (!response.ok) {
+                console.error('Failed to update vote');
+                return;
+            }
+        
+            const updatedVotes = await response.json();
+        
+            setVotesMap(prevVotes => ({
+                ...prevVotes,
+                [key]: {
+                    value: voteValue, 
+                    likes: updatedVotes.likes,
+                    dislikes: updatedVotes.dislikes
+                }
+            }));
+        } catch (error) {
+            console.error('Error updating vote:', error);
+        }
+    }
+    
+    
+    
 
     if (loading) {
         return <div>Loading...</div>;
@@ -118,12 +190,14 @@ function ArticlePage() {
                     />
                     <div className="article-info">
                         <h3>{article.fact_checks[0]?.fact_check_level_label}</h3>
-                        <h3>{votes.likes} {votes.dislikes}</h3>
                         <h3>Posted: {formatDate(article.created_at)}</h3>
                     </div>
                 </div>
             </a>
-
+            <div className="article-likes">
+                <button className="button-class" onClick={() => updateVotes('Article', article.id, 'like')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>{votesMap[`Article-${article.id}`]?.likes || 0}</button>
+                <button className="button-class" onClick={() => updateVotes('Article', article.id, 'dislike')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>{votesMap[`Article-${article.id}`]?.dislikes || 0}</button>
+            </div>
             <div className="fact-checks">
                 {article.fact_checks.length > 0 ? (
                     article.fact_checks.map((fact_check, index) => (
@@ -135,6 +209,10 @@ function ArticlePage() {
                                     source
                                 </a>
                             )}
+                            <div>
+                                <button className="button-class" onClick={() => updateVotes('FactCheck', fact_check.id, 'like')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>{votesMap[`FactCheck-${fact_check.id}`]?.likes || 0}</button>
+                                <button className="button-class" onClick={() => updateVotes('FactCheck', fact_check.id, 'dislike')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>{votesMap[`FactCheck-${fact_check.id}`]?.dislikes || 0}</button>
+                            </div>
                         </div>
                     ))
                 ) : (
@@ -162,6 +240,10 @@ function ArticlePage() {
                                     <span>Posted: {formatDate(comment.created_at)}</span>
                                 )}
                             </p>
+                            <div>
+                                <button className="button-class" onClick={() => updateVotes('Comment', comment.id, 'like')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>{votesMap[`Comment-${comment.id}`]?.likes || 0}</button>
+                                <button className="button-class" onClick={() => updateVotes('Comment', comment.id, 'dislike')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>{votesMap[`Comment-${comment.id}`]?.dislikes || 0}</button>
+                            </div>
                         </div>
                     ))
                 ) : (
