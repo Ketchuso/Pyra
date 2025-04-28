@@ -127,7 +127,7 @@ class UserById(Resource):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
-class VoteResource(Resource):
+class Votes(Resource):
     def post(self):
         data = request.get_json()
         user_id = data.get("user_id")
@@ -135,7 +135,7 @@ class VoteResource(Resource):
         votable_id = data.get("votable_id")
 
         try:
-            value = int(data.get("value"))  # ✅ fixed to use data instead of request.form
+            value = int(data.get("value")) 
         except (ValueError, TypeError):
             return jsonify({"error": "Invalid or missing vote value"}), 400
 
@@ -147,6 +147,7 @@ class VoteResource(Resource):
         if value not in (-1, 0, 1):
             return jsonify({"error": "Vote value must be +1, 0, or -1"}), 400
 
+
         # Try to find existing vote
         vote = db.session.query(Vote).filter_by(
             user_id=user_id,
@@ -155,25 +156,64 @@ class VoteResource(Resource):
         ).first()
 
         if vote:
-            vote.value = value
+            if value == 0:
+                db.session.delete(vote)
+            else:
+                vote.value = value
         else:
-            vote = Vote(
-                user_id=user_id,
-                votable_type=votable_type,
-                votable_id=votable_id,
-                value=value
-            )
-            db.session.add(vote)
+            if value != 0:
+                vote = Vote(
+                    user_id=user_id,
+                    votable_type=votable_type,
+                    votable_id=votable_id,
+                    value=value
+                )
+                db.session.add(vote)
 
         db.session.commit()
+
+        like_count = db.session.query(Vote).filter_by(
+            votable_type=votable_type,
+            votable_id=votable_id,
+            value=1
+        ).count()
+
+        dislike_count = db.session.query(Vote).filter_by(
+            votable_type=votable_type,
+            votable_id=votable_id,
+            value=-1
+        ).count()
 
         return jsonify({
             "result": "vote recorded",
             "votable_type": votable_type,
             "votable_id": votable_id,
-            "value": value
+            "value": value,
+            "likes": like_count,
+            "dislikes": dislike_count
         })
+    
+    def get(self, votable_type, votable_id):
+        try:
+            like_count = db.session.query(Vote).filter_by(
+                votable_type=votable_type,
+                votable_id=votable_id,
+                value=1
+            ).count()
 
+            dislike_count = db.session.query(Vote).filter_by(
+                votable_type=votable_type,
+                votable_id=votable_id,
+                value=-1
+            ).count()
+
+            return jsonify({
+                "likes": like_count,
+                "dislikes": dislike_count
+            })
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
 
 # Add to API
@@ -184,7 +224,7 @@ api.add_resource(Logout, '/logout')
 api.add_resource(Articles, '/articles')
 api.add_resource(ArticleById, '/article/<int:id>')
 api.add_resource(UserById, '/user/<int:id>')
-api.add_resource(VoteResource, '/vote')
+api.add_resource(Votes, '/votes', '/votes/<string:votable_type>/<int:votable_id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

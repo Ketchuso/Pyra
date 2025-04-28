@@ -26,7 +26,6 @@ FACT_CHECK_LEVELS = {
 
 # =====================
 # Mixins
-# =====================
 class TimestampMixin:
     created_at = db.Column(db.DateTime, default=get_utc_now)
     updated_at = db.Column(db.DateTime, default=get_utc_now, onupdate=get_utc_now)
@@ -37,10 +36,7 @@ class TimestampMixin:
         result["updated_at"] = self.updated_at.isoformat() if self.updated_at else None
         return result
 
-# =====================
 # Models
-# =====================
-
 class User(db.Model, SerializerMixin):
     __tablename__ = "user"
 
@@ -53,7 +49,6 @@ class User(db.Model, SerializerMixin):
     submitted_articles = db.relationship('Article', back_populates='submitted_by')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     fact_checks = db.relationship('FactCheck', back_populates='user', passive_deletes=True)
-    votes = db.relationship('Vote', back_populates='user')
 
     serialize_rules = (
         '-_password_hash',
@@ -94,7 +89,7 @@ class User(db.Model, SerializerMixin):
         return bcrypt.check_password_hash(self._password_hash, password.encode('utf-8'))
 
 
-class Vote(db.Model):
+class Vote(db.Model, SerializerMixin):
     __tablename__ = 'votes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -103,8 +98,6 @@ class Vote(db.Model):
     votable_id = db.Column(db.Integer, nullable=False)
     value = db.Column(db.Integer, nullable=False)  # 1 or -1
     created_at = db.Column(db.DateTime, default=get_utc_now)
-
-    user = db.relationship('User', back_populates='votes')
 
     article_votable = db.relationship(
         "Article",
@@ -125,6 +118,14 @@ class Vote(db.Model):
         back_populates='votes',
         primaryjoin="and_(foreign(Vote.votable_id) == FactCheck.id, Vote.votable_type == 'FactCheck')",
         overlaps="article_votable,comment_votable"
+    )
+
+    serialize_rules = (
+        '-article_votable.votes',
+        '-comment_votable.votes',
+        '-fact_check_votable.votes',
+        '-fact_check_votable.user',
+        '-fact_check_votable.article',
     )
 
     @staticmethod
@@ -156,8 +157,6 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
     overlaps="fact_check_votable,comment_votable,votes"
     )
 
-
-
     serialize_rules = (
         '-submitted_by.submitted_articles',
         '-submitted_by.comments',
@@ -166,6 +165,7 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
         '-comments.user',
         '-fact_checks.article',
         '-fact_checks.user',
+        '-votes.article_votable',
     )
 
     def to_dict(self):
@@ -253,7 +253,6 @@ class FactCheck(db.Model, SerializerMixin):
     def to_dict(self):
         data = super().to_dict()
         data['fact_check_level_label'] = self.fact_check_level_label
-        data['votes'] = [v.to_dict() for v in self.votes]
         return data
 
     @property
