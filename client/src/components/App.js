@@ -9,6 +9,7 @@ function App() {
     fetch("/check_session", { credentials: "include" }).then((r) => {
       if (r.ok) {
         r.json().then((user) => setUser(user));
+        console.log(user)
       }
     });
   }, []);
@@ -17,7 +18,7 @@ function App() {
     <div>
       <NavBar user={user} setUser={setUser}/>
       {/* Passing setUser to the AuthLayout through Outlet */}
-      <Outlet context={{ onLogin: setUser }} />
+      <Outlet context={{ user, onLogin: setUser }} />
     </div>
   );
 }
