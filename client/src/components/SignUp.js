@@ -38,7 +38,7 @@ function SignUp({ toggle }) {
         setIsLoading(false);
         if (response.ok) {
           response.json().then(user => onLogin(user))
-          navigate("/?filter=news&sort=hot")
+          navigate("/?sort=hot")
         }
         else{
           response.json().then((err) =>{

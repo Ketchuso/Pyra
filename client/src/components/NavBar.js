@@ -15,10 +15,14 @@ function NavBar({ setUser, user }) {
 
   // Redirect to default filter/sort if none is present
   useEffect(() => {
-    if (location.pathname === "/" && !params.get("filter")) {
-      navigate("/?filter=news&sort=hot", { replace: true });
+    const hasFilter = params.get("filter");
+    const hasSort = params.get("sort");
+  
+    if (location.pathname === "/" && !hasFilter && !hasSort) {
+      navigate("/?sort=hot", { replace: true });
     }
   }, [location, navigate, params]);
+  
 
   const handleLogoutClick = () => {
     fetch("/logout", { method: "DELETE" }).then((r) => {
@@ -34,7 +38,7 @@ function NavBar({ setUser, user }) {
 
   const renderDropdownOption = (label, sortType) => (
     <NavLink
-      to={`/?filter=${currentFilter}&sort=${sortType}`}
+      to={`/?sort=${sortType}`}
       className="dropdown-item"
       onClick={() => setDropdownVisible(false)}
       style={{
@@ -56,34 +60,19 @@ function NavBar({ setUser, user }) {
 
 
       <div className="filters">
-        {/* Filter Buttons */}
-        <NavLink
-          to="/?filter=uplifting&sort=hot"
-          className="nav-text"
-          style={{
-            color: currentFilter === "uplifting" ? "var(--main-color)" : "var(--text-color)",
-            textDecoration: "none",
-          }}
-        >
-          Uplifting
-        </NavLink>
         
         <NavLink
-          to="/?filter=news&sort=hot"
+          to="/?sort=hot"
           className="nav-text"
-          style={{
-            color: currentFilter === "news" ? "var(--main-color)" : "var(--text-color)",
-            textDecoration: "none",
-          }}
         >
-          News
+          Home
         </NavLink>
         
         {/* Show filter only when on the homepage */}
         {isHomePage && (
           <div className="dropdown">
             <button className="dropbtn" onClick={toggleDropdown}>
-              Filter
+              Sort
             </button>
             {isDropdownVisible && (
               <div className="dropdown-content">
