@@ -47,29 +47,38 @@ function Home() {
 
     const currentSort = new URLSearchParams(location.search).get('sort') || 'hot';
     useEffect(() => {
-        fetch(`/articles?${currentSort}`, {
-            method: "GET"
-        })
-        .then(resp => resp.json())
-        .then(data => {
-            if (Array.isArray(data)) {
-                setArticles(data);
-                console.log("Fetched Articles:", data);
-            } else {
-                console.error("Error: Data is not in expected format", data);
+        const fetchArticles = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`/articles?sort=${currentSort}`, {
+                    method: "GET"
+                });
+                const data = await response.json();
+    
+                if (Array.isArray(data)) {
+                    setArticles(data);
+                } else {
+                    console.error("Error: Data is not in expected format", data);
+                    setArticles([]);
+                }
+            } catch (error) {
+                console.error("Error fetching articles:", error);
+                setArticles([]);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
-        })
-        .catch(error => {
-            console.error("Error fetching articles:", error);
-            setLoading(false);
-        });
+        };
+    
+        fetchArticles();
     }, [currentSort]);
+    
 
     return (
         <div className="main-page-contents">
             {loading ? (
-                <div>Loading...</div>
+                <div className="loading-wrapper">
+                    <div className="spinner"></div>
+                </div>
             ) : (
                 <ul>
                     {articles.length > 0 ? (
