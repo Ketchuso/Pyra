@@ -6,6 +6,7 @@ from sqlalchemy import and_
 from sqlalchemy.ext.declarative import declared_attr
 from config import db, bcrypt
 import re
+import math
 
 # =====================
 # Utility
@@ -24,6 +25,7 @@ FACT_CHECK_LEVELS = {
     4: "Verified"
 }
 
+BASE_TIME = datetime(2025,1,1)
 # =====================
 # Mixins
 class TimestampMixin:
@@ -128,11 +130,6 @@ class Vote(db.Model, SerializerMixin):
         '-fact_check_votable.article',
     )
 
-    @staticmethod
-    def calculate_score(votable_type, votable_id):
-        votes = Vote.query.filter_by(votable_type=votable_type, votable_id=votable_id).all()
-        return sum(v.value for v in votes)
-
 
 class Article(db.Model, SerializerMixin, TimestampMixin):
     __tablename__ = "article"
@@ -173,9 +170,15 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
         data['fact_checks'] = [fc.to_dict() for fc in self.fact_checks]
         return data
 
-    @property
     def score(self):
-        return Vote.calculate_score('article', self.id)
+        return sum(v.value for v in self.votes)
+    
+    def hotness(self):
+        score = self.score()
+        order = math.log(max(abs(score), 1), 10)
+        sign = 1 if score > 0 else -1 if score < 0 else 0
+        seconds = (self.created_at - BASE_TIME).total_seconds()
+        return round(order + sign * seconds / 45000, 7)
 
 
 class Comment(db.Model, SerializerMixin, TimestampMixin):
@@ -213,10 +216,15 @@ class Comment(db.Model, SerializerMixin, TimestampMixin):
         data['article'] = self.article.to_dict() if self.article else None
         data['votes'] = [v.to_dict() for v in self.votes]
         return data
-
-    @property
+    
     def score(self):
-        return Vote.calculate_score('comment', self.id)
+        return sum(v.value for v in self.votes)
+    
+    def hotness(self):
+        score = self.score()
+        order = math.log(max(abs(score), 1), 10)
+        sign = 1 if score > 0 else -1 if score < 0 else 0
+        return round(order * sign, 7)
 
 
 class FactCheck(db.Model, SerializerMixin):
@@ -259,9 +267,14 @@ class FactCheck(db.Model, SerializerMixin):
     def fact_check_level_label(self):
         return FACT_CHECK_LEVELS.get(self.fact_check_level, "Unknown")
 
-    @property
     def score(self):
-        return Vote.calculate_score('fact_check', self.id)
+        return sum(v.value for v in self.votes)
+    
+    def hotness(self):
+        score = self.score()
+        order = math.log(max(abs(score), 1), 10)
+        sign = 1 if score > 0 else -1 if score < 0 else 0
+        return round(order * sign, 7)
 
 # Uncomment these when ready to use categories
 # class Category(db.Model, SerializerMixin):
