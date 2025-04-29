@@ -33,7 +33,7 @@ function Login({ toggle }) {
       if (r.ok) {
         r.json().then((user) =>{ 
           onLogin(user)
-          navigate("/?filter=news&sort=hot")
+          navigate("/?sort=hot")
         });
         
       } else {
