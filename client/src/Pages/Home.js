@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function Home() {
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
+    const location = useLocation();
 
     const formatDate = (dateString) => {
         if (dateString.includes(' ')) {
@@ -44,8 +45,9 @@ function Home() {
         return articleDate.toLocaleString('en-US', options);
     };
 
+    const currentSort = new URLSearchParams(location.search).get('sort') || 'hot';
     useEffect(() => {
-        fetch("/articles", {
+        fetch(`/articles?${currentSort}`, {
             method: "GET"
         })
         .then(resp => resp.json())
@@ -62,7 +64,7 @@ function Home() {
             console.error("Error fetching articles:", error);
             setLoading(false);
         });
-    }, []);
+    }, [currentSort]);
 
     return (
         <div className="main-page-contents">

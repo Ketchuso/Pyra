@@ -8,7 +8,7 @@ from faker import Faker
 
 # Local imports
 from app import app
-from models import db, User, Article, Comment, FactCheck
+from models import db, User, Article, Comment, FactCheck, Vote
 from datetime import datetime
 
 fake = Faker()
@@ -49,44 +49,19 @@ def create_articles(users):
             image_url="https://www.reuters.com/resizer/v2/MVXIY6Y3Y5ATDL2LM5KG2WZLAU.jpg?auth=d80c4d2b2b0f1ec860a1689ae1e51673395dfd6ce3c47a76fd0d08fde5c1b445&width=720&quality=80",
             submitted_by_id=rc(users).id
         ),
-        Article(
-            title=lorem_text,
-            url="https://www.reuters.com/fact-check/picture-claudia-sheinbaum-holding-menorah-was-digitally-altered-2024-06-21/",
-            image_url="https://www.reuters.com/resizer/v2/JUPGQHR5KNB7VG2BPAVVMJE5K4.jpg?auth=0bd5367d98dca0ccac19e50df7b000e20d2d8e289e0be357d974ffc070e9d3a3&width=640&quality=80",
-            submitted_by_id=rc(users).id
-        ),
-        Article(
-            title=lorem_text,
-            url="https://www.reuters.com/fact-check/plane-reflection-not-proof-image-manipulation-michigan-harris-rally-2024-08-22/",
-            image_url="https://www.reuters.com/resizer/v2/ZEPPHZCW3FEYHAHSIJINV7WSUA.jpg?auth=64f048d2d0373ba172e0c4650bc8a78c6bc9e061f7bd12ac81123825828daf74&width=720&quality=80",
-            submitted_by_id=rc(users).id
-        ),
-        Article(
-            title=lorem_text,
-            url="https://time.com/7204123/time-top-10-photos-2024/",
-            image_url="https://api.time.com/wp-content/uploads/2024/12/top-10-photos-2024-01.jpg?quality=75&w=828",
-            submitted_by_id=rc(users).id
-        ),
-        Article(
-            title=lorem_text,
-            url="https://apnews.com/article/nasa-water-moon-6",
-            image_url="https://example.com/image6.jpg",
-            submitted_by_id=rc(users).id
-        ),
-        Article(
-            title=lorem_text,
-            url="https://apnews.com/article/ai-cancer-diagnosis-7",
-            image_url="https://example.com/image7.jpg",
-            submitted_by_id=rc(users).id
-        ),
-        # Post with no comments or fact checks
-        Article(
-            title="Post with no comments or fact checks",
-            url="https://snopes.com/fact-check/example-no-checks-or-comments",
-            image_url="https://example.com/no-comments-or-checks.jpg",
-            submitted_by_id=rc(users).id
-        )
+        # Add other articles here...
     ]
+    
+    # Add more articles if needed
+    for _ in range(5):  # Adjust this number to create more articles
+        articles.append(
+            Article(
+                title=lorem_text,
+                url=f"https://example.com/{fake.uuid4()}/",
+                image_url=f"https://example.com/{fake.uuid4()}.jpg",
+                submitted_by_id=rc(users).id
+            )
+        )
 
     db.session.add_all(articles)
     db.session.commit()
@@ -101,16 +76,18 @@ def create_comments(users, articles):
         "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     )
     comments = []
-    for _ in range(30):
-        comment = Comment(
-            content=lorem_text,
-            user_id=rc(users).id,
-            article_id=rc(articles[:-1]).id  # Exclude the last article
-        )
-        comments.append(comment)
+    
+    if len(articles) > 1:  # Ensure we have more than one article
+        for _ in range(30):
+            comment = Comment(
+                content=lorem_text,
+                user_id=rc(users).id,
+                article_id=rc(articles[:-1]).id  # Exclude the last article
+            )
+            comments.append(comment)
 
-    db.session.add_all(comments)
-    db.session.commit()
+        db.session.add_all(comments)
+        db.session.commit()
 
 # Create sample fact checks
 def create_fact_checks(users, articles):
@@ -125,19 +102,53 @@ def create_fact_checks(users, articles):
 
     for article in articles[:-1]:  # Exclude the last article
         for _ in range(7):
-            fact_checks.append(
-                FactCheck(
-                    fact_check_level=rc(fact_levels),
-                    content=lorem_text,
-                    source=fake.url(),
-                    fact_check_url=fake.url(),
-                    user_id=rc(users).id,
-                    article_id=article.id
-                )
+            fact_check = FactCheck(
+                fact_check_level=rc(fact_levels),
+                content=lorem_text,
+                source=fake.url(),
+                fact_check_url=fake.url(),
+                user_id=rc(users).id,
+                article_id=article.id
             )
+            fact_checks.append(fact_check)
+
+            # Add random upvotes/downvotes for each fact check
+            add_votes_for_fact_check(fact_check)
 
     db.session.add_all(fact_checks)
     db.session.commit()
+
+def add_votes_for_fact_check(fact_check):
+    # Ensure fact_check is added to the session before using its ID
+    db.session.add(fact_check)
+    db.session.flush()  # This will flush the fact_check object to the database and assign it an ID
+
+    # Random number of upvotes and downvotes
+    num_upvotes = randint(5, 15)  # Upvotes between 5 and 15
+    num_downvotes = randint(0, 5)  # Downvotes between 0 and 5
+    
+    # Create upvotes
+    for _ in range(num_upvotes):
+        vote = Vote(
+            votable_id=fact_check.id, 
+            votable_type='FactCheck', 
+            value=1, 
+            user_id=rc([user.id for user in User.query.all()])
+        )
+        db.session.add(vote)
+
+    # Create downvotes
+    for _ in range(num_downvotes):
+        vote = Vote(
+            votable_id=fact_check.id, 
+            votable_type='FactCheck', 
+            value=-1, 
+            user_id=rc([user.id for user in User.query.all()])
+        )
+        db.session.add(vote)
+
+    db.session.commit()  # Commit all the votes
+
 
 # Main function to run the seed script
 def run_seed():

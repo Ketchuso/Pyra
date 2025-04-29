@@ -93,9 +93,17 @@ class Logout(Resource):
         
 class Articles(Resource):
     def get(self):
+        sort_type = request.args.get('sort', 'hot')
         try:
             articles = db.session.query(Article).all()
-            return jsonify([article.to_dict() for article in articles])
+            if sort_type == 'new':
+                return jsonify([article.to_dict() for article in articles])
+            elif sort_type == 'hot':
+                sorted_articles = sorted(articles, key=lambda a: a.hotness(), reverse=True)
+                return jsonify([sorted_article.to_dict() for sorted_article in sorted_articles])
+            else:
+                return {"error" : "unsupported sorting type"}
+            
         except Exception as e:
             return {"error": str(e)}, 500
 
