@@ -163,6 +163,9 @@ class ArticleById(Resource):
         if not article:
             return make_response({"error": "Article not found"}, 400)
         
+        for vote in article.votes:
+            db.session.delete(vote)
+        
         db.session.delete(article)
         db.session.commit()
         return make_response({"", 204})
@@ -173,10 +176,13 @@ class CreateArticle(Resource):
             data = request.get_json()
             required_fields = ['image_url', 'title', 'url']
             for field in required_fields:
-                if field not in data or not isinstance(data[field], str) or not data[field].strip:
+                if field not in data or not isinstance(data[field], str) or not data[field].strip():
                     return jsonify({"error": f"Invalid or missing field: {field}"}), 400
+            
+            if 'submitted_by_id' not in data or not isinstance(data['submitted_by_id'], int):
+                return jsonify({"error": "Invalid or missing field: submitted_by_id"}), 400
 
-            new_article = Article(image_url = data['image_url'], title = data['title'], url = data['url'])
+            new_article = Article(image_url = data['image_url'], title = data['title'], url = data['url'], submitted_by_id = data['submitted_by_id'])
             db.session.add(new_article)
             db.session.commit()
             return make_response(new_article.to_dict(), 201)
