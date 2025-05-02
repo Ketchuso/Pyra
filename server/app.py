@@ -163,12 +163,9 @@ class ArticleById(Resource):
         if not article:
             return make_response({"error": "Article not found"}, 400)
         
-        for vote in article.votes:
-            db.session.delete(vote)
-        
         db.session.delete(article)
         db.session.commit()
-        return make_response({"", 204})
+        return make_response("", 204)
     
 class CreateArticle(Resource):
     def post(self):

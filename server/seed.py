@@ -54,15 +54,16 @@ def create_articles(users):
     
     # Add more articles if needed
     for _ in range(5):  # Adjust this number to create more articles
-        articles.append(
-            Article(
-                title=lorem_text,
-                url=f"https://example.com/{fake.uuid4()}/",
-                image_url=f"https://example.com/{fake.uuid4()}.jpg",
-                submitted_by_id=rc(users).id
-            )
+        article = Article(
+            title=lorem_text,
+            url=f"https://example.com/{fake.uuid4()}/",
+            image_url=f"https://example.com/{fake.uuid4()}.jpg",
+            submitted_by_id=rc(users).id
         )
+        articles.append(article)
+        add_votes_for_articles(article)
 
+    
     db.session.add_all(articles)
     db.session.commit()
     return articles
@@ -149,6 +150,36 @@ def add_votes_for_fact_check(fact_check):
 
     db.session.commit()  # Commit all the votes
 
+def add_votes_for_articles(article):
+    # Ensure fact_check is added to the session before using its ID
+    db.session.add(article)
+    db.session.flush()  # This will flush the fact_check object to the database and assign it an ID
+
+    # Random number of upvotes and downvotes
+    num_upvotes = randint(5, 15)  # Upvotes between 5 and 15
+    num_downvotes = randint(0, 5)  # Downvotes between 0 and 5
+    
+    # Create upvotes
+    for _ in range(num_upvotes):
+        vote = Vote(
+            votable_id=article.id, 
+            votable_type='Article', 
+            value=1, 
+            user_id=rc([user.id for user in User.query.all()])
+        )
+        db.session.add(vote)
+
+    # Create downvotes
+    for _ in range(num_downvotes):
+        vote = Vote(
+            votable_id=article.id, 
+            votable_type='Article', 
+            value=-1, 
+            user_id=rc([user.id for user in User.query.all()])
+        )
+        db.session.add(vote)
+
+    db.session.commit()  # Commit all the votes
 
 # Main function to run the seed script
 def run_seed():
