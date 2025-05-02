@@ -10,6 +10,10 @@ function ArticlePage() {
     const [newVote, setNewVote] = useState(true);
     const [votesMap, setVotesMap] = useState({});
     const [votableType, setVotableType] = useState("Article");
+    const [editArticle, setEditArticle] = useState(false);
+    const [newTitle, setNewTitle] = useState('')
+    const [newImageUrl, setNewImageUrl] = useState('')
+    const [newArticleUrl, setNewArticleUrl] = useState('')
 
 
     const formatDate = (dateString) => {
@@ -167,8 +171,9 @@ function ArticlePage() {
         }
     }
     
-    
-    
+    function onEditClick() {
+        setEditArticle(!editArticle);
+    }
 
     if (loading) {
         return(
@@ -182,8 +187,87 @@ function ArticlePage() {
         return <div>No article found.</div>;
     }
 
+    function updateArticle(e) {
+        e.preventDefault();
+    
+        const updatedFields = {};
+        if (newTitle?.trim()) updatedFields.title = newTitle.trim();
+        if (newImageUrl?.trim()) updatedFields.image_url = newImageUrl.trim();
+        if (newArticleUrl?.trim()) updatedFields.url = newArticleUrl.trim();
+    
+        if (Object.keys(updatedFields).length === 0) {
+            alert("No changes to update.");
+            return;
+        }
+    
+        fetch(`/article/${id}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedFields),
+        })
+        .then(r => {
+            if (r.ok) {
+                return r.json().then(data => {
+                    alert("Successfully updated article!");
+                    console.log("Updated Info:", data);
+                });
+            } else {
+                return r.json().then(error => {
+                    alert("Something went wrong");
+                    console.log("Server error:", error);
+                });
+            }
+        })
+        .catch(err => {
+            alert("Sorry something went wrong on our end");
+            console.error("Error updating post:", err);
+        });
+    }    
+
     return (
         <div className="individual-article">
+            
+                {editArticle && (
+                    <div className="form-container">
+                        <form onSubmit={e => updateArticle(e)}>
+                            <label>
+                                Title:
+                                <input
+                                type="text"
+                                name="title"
+                                placeholder="title..."
+                                onChange={e => setNewTitle(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <label>
+                                Image Url:
+                                <input 
+                                type="text" 
+                                name="image_url" 
+                                placeholder="image url..." 
+                                onChange={(e) => setNewImageUrl(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <label>
+                                Article Url:
+                                <input 
+                                type="text" 
+                                name="article_url" 
+                                placeholder="article url..." 
+                                onChange={(e) => setNewArticleUrl(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <button className="button-class" type="submit">Submit</button>
+                            <h4>You don't have to update every field</h4>
+                            <h4>Refresh page to see changes</h4>
+                        </form>
+                    </div>
+                )}
             <a href={article.url} className="individual-article-link">
                 <div className="article-container">
                     <h1 className="article-title">{article.title}</h1>
@@ -201,6 +285,9 @@ function ArticlePage() {
             <div className="article-likes">
                 <button className="button-class" onClick={() => updateVotes('Article', article.id, 'like')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>{votesMap[`Article-${article.id}`]?.likes || 0}</button>
                 <button className="button-class" onClick={() => updateVotes('Article', article.id, 'dislike')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>{votesMap[`Article-${article.id}`]?.dislikes || 0}</button>
+                {user && user.id === article.submitted_by_id && (
+                    <button onClick={() => onEditClick()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg></button>
+                )}
             </div>
             <div className="fact-checks">
                 {article.fact_checks.length > 0 ? (

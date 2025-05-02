@@ -46,7 +46,7 @@ function AddArticle(){
             <>
               <h1>Add Article</h1>
       
-              <form onSubmit={e => handleSubmit(e)}>
+              <form className="form-container" onSubmit={e => handleSubmit(e)}>
                 <label>
                   Title:
                   <input 
@@ -77,7 +77,7 @@ function AddArticle(){
                   />
                 </label>
                 <br />
-                <button type="submit">Submit</button>
+                <button className="button-class" type="submit">Submit</button>
               </form>
             </>
           ) : (
