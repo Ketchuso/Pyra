@@ -97,7 +97,7 @@ class Vote(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     votable_type = db.Column(db.String, nullable=False)  # 'article', 'comment', 'fact_check'
-    votable_id = db.Column(db.Integer)
+    votable_id = db.Column(db.Integer, nullable=False)
     value = db.Column(db.Integer, nullable=False)  # 1 or -1
     created_at = db.Column(db.DateTime, default=get_utc_now)
 
