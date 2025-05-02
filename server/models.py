@@ -151,7 +151,9 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
         Vote.votable_type == 'Article'
     ),
     back_populates='article_votable',
-    overlaps="fact_check_votable,comment_votable,votes"
+    overlaps="fact_check_votable,comment_votable,votes",
+    cascade="all, delete-orphan",
+    passive_deletes=True
     )
 
     serialize_rules = (

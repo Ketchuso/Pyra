@@ -121,6 +121,74 @@ class ArticleById(Resource):
         
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+    
+    def patch(self, id):
+        try:
+            # Fetch article by id
+            article = db.session.get(Article, id)
+            data = request.get_json()
+
+            def is_valid_str(value):
+                return isinstance(value, str) and value.strip()
+
+            if not article:
+                return jsonify({"error": "Article not found"}, 404)
+            
+            if "image_url" in data:
+                if is_valid_str(data['image_url']):
+                    article.image_url = data["image_url"]
+                else:
+                    return jsonify({"error": "Invalid image url"}, 400)
+            
+            if "title" in data:
+                if is_valid_str(data['title']):
+                    article.title = data["title"]
+                else:
+                    return jsonify({"error": "Invalid title"}, 400)
+
+            if "url" in data:
+                if is_valid_str(data['url']):
+                    article.url = data["url"]
+                else:
+                    return jsonify({"error": "Invalid url"}, 400)
+            
+            db.session.commit()
+            return make_response(article.to_dict(), 200)
+        
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    def delete(self, id):
+        article = db.session.get(Article, id)
+        if not article:
+            return make_response({"error": "Article not found"}, 400)
+        
+        for vote in article.votes:
+            db.session.delete(vote)
+        
+        db.session.delete(article)
+        db.session.commit()
+        return make_response({"", 204})
+    
+class CreateArticle(Resource):
+    def post(self):
+        try:
+            data = request.get_json()
+            required_fields = ['image_url', 'title', 'url']
+            for field in required_fields:
+                if field not in data or not isinstance(data[field], str) or not data[field].strip():
+                    return jsonify({"error": f"Invalid or missing field: {field}"}), 400
+            
+            if 'submitted_by_id' not in data or not isinstance(data['submitted_by_id'], int):
+                return jsonify({"error": "Invalid or missing field: submitted_by_id"}), 400
+
+            new_article = Article(image_url = data['image_url'], title = data['title'], url = data['url'], submitted_by_id = data['submitted_by_id'])
+            db.session.add(new_article)
+            db.session.commit()
+            return make_response(new_article.to_dict(), 201)
+        
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
 class UserById(Resource):
     def get(self, id):
@@ -229,8 +297,10 @@ api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
 api.add_resource(Articles, '/articles')
 api.add_resource(ArticleById, '/article/<int:id>')
+api.add_resource(CreateArticle, '/create_article')
 api.add_resource(UserById, '/user/<int:id>')
 api.add_resource(Votes, '/votes/<string:votable_type>/<int:votable_id>')
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
