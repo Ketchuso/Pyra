@@ -97,7 +97,7 @@ class Vote(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     votable_type = db.Column(db.String, nullable=False)  # 'article', 'comment', 'fact_check'
-    votable_id = db.Column(db.Integer, nullable=False)
+    votable_id = db.Column(db.Integer)
     value = db.Column(db.Integer, nullable=False)  # 1 or -1
     created_at = db.Column(db.DateTime, default=get_utc_now)
 
@@ -105,7 +105,7 @@ class Vote(db.Model, SerializerMixin):
         "Article",
         back_populates="votes",
         primaryjoin="and_(foreign(Vote.votable_id) == Article.id, Vote.votable_type == 'Article')",
-        overlaps="comment_votable,fact_check_votable"
+        overlaps="comment_votable,fact_check_votable",
     )
 
     comment_votable = db.relationship(
@@ -145,15 +145,14 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
     fact_checks = db.relationship('FactCheck', back_populates='article', cascade='all, delete-orphan')
 
     votes = db.relationship(
-    'Vote',
-    primaryjoin=and_(
-        foreign(Vote.votable_id) == id,
-        Vote.votable_type == 'Article'
-    ),
-    back_populates='article_votable',
-    overlaps="fact_check_votable,comment_votable,votes",
-    cascade="all, delete-orphan",
-    passive_deletes=True
+        'Vote',
+        primaryjoin=and_(
+            foreign(Vote.votable_id) == id,
+            Vote.votable_type == 'Article'
+        ),
+        back_populates='article_votable',
+        overlaps="fact_check_votable,comment_votable,votes",
+        cascade="all, delete-orphan"
     )
 
     serialize_rules = (
@@ -182,7 +181,6 @@ class Article(db.Model, SerializerMixin, TimestampMixin):
         seconds = (self.created_at - BASE_TIME).total_seconds()
         return round(order + sign * seconds / 45000, 7)
 
-
 class Comment(db.Model, SerializerMixin, TimestampMixin):
     __tablename__ = "comment"
 
@@ -201,7 +199,8 @@ class Comment(db.Model, SerializerMixin, TimestampMixin):
         Vote.votable_type == 'Comment'
     ),
     back_populates='comment_votable',
-    overlaps="article_votable,fact_check_votable,votes"
+    overlaps="article_votable,fact_check_votable,votes",
+    cascade="all, delete-orphan"
     )
 
 
@@ -249,7 +248,8 @@ class FactCheck(db.Model, SerializerMixin):
         Vote.votable_type == 'FactCheck'
     ),
     back_populates='fact_check_votable',
-    overlaps="article_votable,comment_votable,votes"
+    overlaps="article_votable,comment_votable,votes",
+    cascade="all, delete-orphan"
     )
 
 
