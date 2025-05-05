@@ -10,11 +10,13 @@ import "./index.css";
 import Settings from "./Pages/Settings";
 import ArticlePage from "./Pages/ArticlePage";
 import AddArticle from "./Pages/AddArticle";
+import ErrorPage from "./Pages/ErrorPage";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage/>,
     children: [
       { path: "/", element: <Home /> },
       { path: "/auth", element: <AuthLayout /> },

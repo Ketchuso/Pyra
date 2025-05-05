@@ -95,17 +95,19 @@ class Articles(Resource):
     def get(self):
         sort_type = request.args.get('sort', 'hot')
         try:
-            articles = db.session.query(Article).all()
             if sort_type == 'new':
-                return jsonify([article.to_dict() for article in articles])
+                articles = db.session.query(Article).order_by(Article.created_at.desc()).all()
             elif sort_type == 'hot':
-                sorted_articles = sorted(articles, key=lambda a: a.hotness(), reverse=True)
-                return jsonify([sorted_article.to_dict() for sorted_article in sorted_articles])
+                articles = db.session.query(Article).all()
+                articles = sorted(articles, key=lambda a: a.hotness(), reverse=True)
             else:
-                return {"error" : "unsupported sorting type"}
-            
+                return {"error": "unsupported sorting type"}, 400
+
+            return jsonify([article.to_dict() for article in articles])
+
         except Exception as e:
             return {"error": str(e)}, 500
+
 
 class ArticleById(Resource):
     def get(self, id):

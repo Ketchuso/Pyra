@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 function Home() {
     const [articles, setArticles] = useState([]);
@@ -97,7 +97,15 @@ function Home() {
                                         alt={article.title}
                                     />
                                     <div className="article-info">
-                                        <h3>{article.fact_checks[0]?.fact_check_level_label}</h3>
+                                    <h3>
+                                        {
+                                            article.fact_checks?.length > 0
+                                            ? article.fact_checks
+                                                .slice() // avoid mutating original array
+                                                .sort((a, b) => b.hotness - a.hotness)[0].fact_check_level_label
+                                            : "Unverified"
+                                        }
+                                        </h3>
                                         <h3>Posted: {formatDate(article.created_at)}</h3>
                                     </div>
                                 </div>
