@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 
 function ArticlePage() {
     const { user } = useOutletContext();
@@ -14,6 +14,8 @@ function ArticlePage() {
     const [newTitle, setNewTitle] = useState('')
     const [newImageUrl, setNewImageUrl] = useState('')
     const [newArticleUrl, setNewArticleUrl] = useState('')
+    const [deleteArticle, setDeleteArticle] = useState(false)
+    const navigate = useNavigate();
 
 
     const formatDate = (dateString) => {
@@ -175,6 +177,10 @@ function ArticlePage() {
         setEditArticle(!editArticle);
     }
 
+    function onDeleteArticle(){
+        setDeleteArticle(!deleteArticle)
+    }
+
     if (loading) {
         return(
             <div className="loading-wrapper">
@@ -226,11 +232,38 @@ function ArticlePage() {
         });
     }    
 
+    function removeArticle() {
+        fetch(`/article/${id}`, {
+            method: "DELETE",
+        })
+        .then(async r => {
+            if (r.ok) {
+                // Only parse JSON if there's a response body (204 means no content)
+                if (r.status !== 204) {
+                    const data = await r.json();
+                    console.log("Deleted Info:", data);
+                }
+                navigate("/?sort=hot")
+                alert("Successfully deleted article!");
+            } else {
+                const error = await r.json();
+                alert("Something went wrong");
+                console.log("Server error:", error);
+            }
+        })
+        .catch(err => {
+            alert("Sorry something went wrong on our end");
+            console.error("Error deleting post:", err);
+        });
+    }
+    
+
     return (
         <div className="individual-article">
             
                 {editArticle && (
                     <div className="form-container">
+                        <button onClick={() => onEditClick()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
                         <form onSubmit={e => updateArticle(e)}>
                             <label>
                                 Title:
@@ -268,6 +301,16 @@ function ArticlePage() {
                         </form>
                     </div>
                 )}
+                {deleteArticle && (
+                    <div className="form-container">
+                        <h1>Are you Sure you would like to this?</h1>
+                        <h3>You can't undo a deleted article</h3>
+                        <div>
+                            <button onClick={() => removeArticle()} className="button-class">finish them</button>
+                            <button onClick={() => onDeleteArticle()} className="button-class">go back</button>
+                        </div>
+                    </div>
+                )}
             <a href={article.url} className="individual-article-link">
                 <div className="article-container">
                     <h1 className="article-title">{article.title}</h1>
@@ -286,7 +329,10 @@ function ArticlePage() {
                 <button className="button-class" onClick={() => updateVotes('Article', article.id, 'like')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>{votesMap[`Article-${article.id}`]?.likes || 0}</button>
                 <button className="button-class" onClick={() => updateVotes('Article', article.id, 'dislike')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>{votesMap[`Article-${article.id}`]?.dislikes || 0}</button>
                 {user && user.id === article.submitted_by_id && (
-                    <button onClick={() => onEditClick()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg></button>
+                    <>
+                        <button onClick={() => onEditClick()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg></button>
+                        <button onClick={() => onDeleteArticle()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg></button>
+                    </>
                 )}
             </div>
             <div className="fact-checks">
