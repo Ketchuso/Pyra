@@ -201,6 +201,47 @@ class UserById(Resource):
         
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+        
+    def patch(self, id):
+        try:
+            user = db.session.get(User, id)
+
+            if not user: 
+                return {"error": "User was not found"}, 404
+            
+            data = request.get_json()
+
+            if "username" in data:
+                existing_user = db.session.query(User).filter(User.username == data["username"]).first()
+                if existing_user and existing_user.id != user.id:
+                    return {"error": "Username already taken!"}, 400
+                elif existing_user and existing_user.id == user.id:
+                    return {"error": "That is your current username, silly goose!"}, 400
+                
+                user.username = data['username']
+            
+            if "email" in data:
+                existing_email = db.session.query(User).filter(User.email == data['email']).first()
+                if existing_email and existing_email.id != user.id:
+                    return {"error": "Email already in use"}, 400
+                elif existing_email and existing_email.id == user.id:
+                    return {"error": "That is your current email silly goose!"}, 400
+
+                user.email = data['email']
+                
+            if "password" in data:
+                if user.check_password(data["password"]):
+                    return {"error": "That is your current password, silly goose!"}, 400
+                
+                user.password_hash = data['password']
+
+            db.session.commit()
+            return user.to_dict(), 200
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+
 
 class Votes(Resource):
     def post(self, votable_type, votable_id):

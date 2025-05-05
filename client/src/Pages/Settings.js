@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 
 function Settings(){
     const { user } = useOutletContext();
@@ -8,11 +8,67 @@ function Settings(){
     const [newEmailConfirmation, setNewEmailConfirmation] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [newPasswordConfirmation, setNewPasswordConfirmation] = useState('');
+    const { id } = useParams();
 
-    function handleSubmit(e){
+    async function handleSubmit(e) {
         e.preventDefault();
-        alert("submit handled")
+    
+        if (!newUsername && !newEmail && !newPassword) {
+            alert("Please provide at least one field to update");
+            return;
+        }
+    
+        if (newEmail && newEmailConfirmation) {
+            if (newEmail.trim() !== newEmailConfirmation.trim()) {
+              alert("The email and email confirmation don't match");
+              return;
+            }
+          }
+      
+    
+        if (newPassword && newPasswordConfirmation) {
+            if (newPassword.trim() !== newPasswordConfirmation.trim()) {
+                alert("The password and password confirmation don't match");
+                return;
+            }
+        }
+    
+        const body = {};
+    
+        if (newUsername !== '') {
+            body.username = newUsername.trim();
+        }
+    
+        if (newEmail !== '') {
+            body.email = newEmail.trim();
+        }
+    
+        if (newPassword !== '') {
+            body.password = newPassword.trim();
+        }
+    
+        try {
+            const response = await fetch(`/user/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(body),
+            });
+    
+            if (response.ok) {
+                alert("Updated your info!");
+            } else {
+                const err = await response.json();
+                alert(err.error || "Update failed.");
+            }
+        } catch (error) {
+            console.error("Update error:", error);
+            alert("An error occurred.");
+        }
     }
+    
 
     return (
         <>
@@ -42,22 +98,21 @@ function Settings(){
                   />
                 </label>
                 <br />
-      
-                {newEmail !== '' && (
+                {newEmail && (
                   <>
                     <label>
                       New Email Confirmation:
                       <input 
                         type="text" 
-                        name="email confirmation" 
+                        name="email_confirmation" 
                         placeholder="email confirmation..." 
-                        onChange={(e) => setNewEmail(e.target.value)}
+                        onChange={(e) => setNewEmailConfirmation(e.target.value)} 
                       />
                     </label>
                     <br />
                   </>
                 )}
-
+      
                 <label>
                   Update Password:
                   <input 
@@ -69,21 +124,21 @@ function Settings(){
                 </label>
                 <br />
 
-                {newPassword !== '' && (
+                {newPassword && (
                   <>
                     <label>
                       New Password Confirmation:
                       <input 
                         type="text" 
-                        name="Password Confirmation" 
+                        name="Password_Confirmation" 
                         placeholder="password confirmation..." 
-                        onChange={(e) => setNewPasswordConfirmation(e.target.value)}
+                        onChange={(e) => setNewPasswordConfirmation(e.target.value)} 
                       />
                     </label>
                     <br />
                   </>
                 )}
-
+      
                 <button className="button-class" type="submit">Submit</button>
               </form>
             </>
@@ -92,6 +147,7 @@ function Settings(){
           )}
         </>
       );
+      
 }
 
 export default Settings
