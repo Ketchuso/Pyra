@@ -420,9 +420,13 @@ input.error, select.error {
   border-color: var(--error-color);
 }
 
-/* error page text */
-#error{
+/* center page text */
+.center-text{
   position:absolute;
   top: 20%;
-  left: 25%;
+  left: 35%;
+}
+
+#error-text{
+  margin-left: -10%;
 }
