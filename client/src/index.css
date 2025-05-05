@@ -419,3 +419,10 @@ input:focus, select:focus {
 input.error, select.error {
   border-color: var(--error-color);
 }
+
+/* error page text */
+#error{
+  position:absolute;
+  top: 20%;
+  left: 25%;
+}
