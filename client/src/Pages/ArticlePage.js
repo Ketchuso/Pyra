@@ -16,6 +16,8 @@ function ArticlePage() {
     const [newArticleUrl, setNewArticleUrl] = useState('')
     const [deleteArticle, setDeleteArticle] = useState(false)
     const navigate = useNavigate();
+    const [addComment, setAddComment] = useState(false)
+    const [content, setContent] = useState('')
 
 
     const formatDate = (dateString) => {
@@ -181,6 +183,10 @@ function ArticlePage() {
         setDeleteArticle(!deleteArticle)
     }
 
+    function onAddComment(){
+        setAddComment(!addComment)
+    }
+
     if (loading) {
         return(
             <div className="loading-wrapper">
@@ -256,6 +262,59 @@ function ArticlePage() {
             console.error("Error deleting post:", err);
         });
     }
+
+    function submitComment(e) {
+        e.preventDefault()
+        // Declare body using let
+        let body = {};
+        console.log("user id: " + user.id)
+        console.log("article id: " + id)
+    
+        if (!content) {
+            alert("There has to be content to comment");
+            return;
+        }
+    
+        body.content = content;
+    
+        if (!user.id) {
+            alert("Error, user has no id");
+            return;
+        }
+    
+        body.user_id = user.id;
+    
+        if (!id) {
+            alert("Error Article id doesn't exist");
+            return;
+        }
+    
+        body.article_id = parseInt(id);
+    
+        fetch('/create_comment', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        }).then(r => {
+            if (r.ok) {
+                return r.json().then(data => {
+                    alert("Successfully posted a new comment!");
+                    console.log("Created comment:", data);
+                });
+            } else {
+                return r.json().then(error => {
+                    alert("Sorry something went wrong");
+                    console.log("Server error:", error);
+                });
+            }
+        })        
+        .catch(err =>{
+            alert("Sorry something went wrong on our end!")
+            console.error("Error creating comment:", err)
+        })
+        
+    }
+    
     
 
     return (
@@ -311,6 +370,25 @@ function ArticlePage() {
                         </div>
                     </div>
                 )}
+                {addComment && (
+                    <div className="form-container">
+                        <button onClick={() => onAddComment()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <form onSubmit={e => submitComment(e)}>
+                            <label>
+                                Comment:
+                                <input
+                                type="text"
+                                name="content"
+                                placeholder="content..."
+                                onChange={e => setContent(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <button className="button-class" type="submit">Submit</button>
+                            <h4>Refresh page to see changes</h4>
+                        </form>
+                    </div>
+                )}
             <a href={article.url} className="individual-article-link">
                 <div className="article-container">
                     <h1 className="article-title">{article.title}</h1>
@@ -360,6 +438,7 @@ function ArticlePage() {
             </div>
 
             <div className="comment-container">
+            {user && (<button onClick={()=> onAddComment()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg></button>)}
                 <h1>Comments</h1>
                 {article.comments.length > 0 ? (
                     article.comments.map((comment, index) => (
