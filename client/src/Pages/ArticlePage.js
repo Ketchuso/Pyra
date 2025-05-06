@@ -18,6 +18,10 @@ function ArticlePage() {
     const navigate = useNavigate();
     const [addComment, setAddComment] = useState(false)
     const [content, setContent] = useState('')
+    const [addFactCheck, setAddFactCheck] = useState(false);
+    const [factCheckContent, setFactCheckContent] = useState('');
+    const [factCheckLevel, setFactCheckLevel] = useState('')
+    const [fact_check_url, setFactCheckUrl] = useState('')
 
 
     const formatDate = (dateString) => {
@@ -180,11 +184,18 @@ function ArticlePage() {
     }
 
     function onDeleteArticle(){
-        setDeleteArticle(!deleteArticle)
+        setDeleteArticle(!deleteArticle);
     }
 
     function onAddComment(){
-        setAddComment(!addComment)
+        setAddComment(!addComment);
+    }
+
+    function onFactCheck(){
+        setAddFactCheck(!addFactCheck);
+        setFactCheckContent('');
+        setFactCheckLevel('');
+        setFactCheckUrl('');
     }
 
     if (loading) {
@@ -265,10 +276,7 @@ function ArticlePage() {
 
     function submitComment(e) {
         e.preventDefault()
-        // Declare body using let
         let body = {};
-        console.log("user id: " + user.id)
-        console.log("article id: " + id)
     
         if (!content) {
             alert("There has to be content to comment");
@@ -295,27 +303,96 @@ function ArticlePage() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
+        })
+        .then(async r => {
+            const data = await r.json();
+            if (r.ok) {
+                alert("Successfully posted a new comment!");
+                console.log("Created comment:", data);
+                setContent('');
+                onAddComment();
+            } else {
+                alert("Sorry something went wrong");
+                console.log("Server error:", data);
+                setContent('');
+                onAddComment();
+            }
+        })
+        .catch(err => {
+            alert("Sorry something went wrong on our end!");
+            console.error("Error creating comment:", err);
+            onAddComment();
+        });        
+    }
+    
+    function submitFactCheck(e) {
+        e.preventDefault()
+        let body = {};
+    
+        if (!factCheckContent) {
+            alert("There has to be content to fact check");
+            return;
+        }
+    
+        body.content = factCheckContent;
+    
+        if (!user.id) {
+            alert("Error, user has no id");
+            return;
+        }
+    
+        body.user_id = user.id;
+    
+        if (!id) {
+            alert("Error Article id doesn't exist");
+            return;
+        }
+    
+        body.article_id = parseInt(id);
+
+        if (!factCheckLevel){
+            alert("Has to have fact check level");
+            return;
+        }
+
+        const parsedLevel = parseInt(factCheckLevel);
+        if (isNaN(parsedLevel) || parsedLevel < 0 || parsedLevel > 4) {
+            alert("Invalid fact check level: must be a number between 0 and 4");
+            return;
+        }        
+        
+        body.fact_check_level = parsedLevel;
+
+        if (fact_check_url) {
+            body.fact_check_url = fact_check_url;
+        }
+    
+        fetch('/create_fact_check', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
         }).then(r => {
             if (r.ok) {
                 return r.json().then(data => {
-                    alert("Successfully posted a new comment!");
-                    console.log("Created comment:", data);
+                    alert("Successfully posted a new fact check!");
+                    console.log("Created fact check:", data);
+                    onFactCheck();
                 });
             } else {
                 return r.json().then(error => {
                     alert("Sorry something went wrong");
                     console.log("Server error:", error);
+                    onFactCheck();
                 });
             }
         })        
         .catch(err =>{
             alert("Sorry something went wrong on our end!")
-            console.error("Error creating comment:", err)
+            console.error("Error creating fact check:", err)
+            onFactCheck();
         })
         
     }
-    
-    
 
     return (
         <div className="individual-article">
@@ -389,6 +466,45 @@ function ArticlePage() {
                         </form>
                     </div>
                 )}
+                {addFactCheck && (
+                    <div className="form-container">
+                        <button onClick={() => onFactCheck()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <form onSubmit={e => submitFactCheck(e)}>
+                            <label>
+                                Content:
+                                <input
+                                type="text"
+                                name="fact check content"
+                                placeholder="content..."
+                                onChange={e => setFactCheckContent(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <label>
+                                Fact Check Level:
+                                <input
+                                type="text"
+                                name="fact check level"
+                                placeholder="0-4, (0 = Unverified, 4 = verified)"
+                                onChange={e => setFactCheckLevel(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <label>
+                                Fact Check Url (optional):
+                                <input
+                                type="text"
+                                name="fact check url"
+                                placeholder="something to back up your fact check"
+                                onChange={e => setFactCheckUrl(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <button className="button-class" type="submit">Submit</button>
+                            <h4>Refresh page to see changes</h4>
+                        </form>
+                    </div>
+                )}
             <a href={article.url} className="individual-article-link">
                 <div className="article-container">
                     <h1 className="article-title">{article.title}</h1>
@@ -406,6 +522,7 @@ function ArticlePage() {
             <div className="article-likes">
                 <button className="button-class" onClick={() => updateVotes('Article', article.id, 'like')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>{votesMap[`Article-${article.id}`]?.likes || 0}</button>
                 <button className="button-class" onClick={() => updateVotes('Article', article.id, 'dislike')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>{votesMap[`Article-${article.id}`]?.dislikes || 0}</button>
+                {user && (<button onClick={()=> onFactCheck()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg></button>)}
                 {user && user.id === article.submitted_by_id && (
                     <>
                         <button onClick={() => onEditClick()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg></button>
