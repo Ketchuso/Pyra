@@ -430,7 +430,7 @@ class CreateComment(Resource):
                 return {"error": "Invalid or missing field: user_id"}, 400
             
             if 'article_id' not in data or not isinstance(data['article_id'], int):
-                return {"error" : "Article_id must not be null or invalid"}
+                return {"error" : f"Article_id must not be null or invalid"}, 400
             
             new_comment = Comment(
                 content=data['content'],
