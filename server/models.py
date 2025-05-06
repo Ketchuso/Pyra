@@ -234,7 +234,6 @@ class FactCheck(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     fact_check_level = db.Column(db.Integer, nullable=False, default=0)
     content = db.Column(db.String(2000), nullable=True)
-    source = db.Column(db.String(150), nullable=False)
     fact_check_url = db.Column(db.String(255), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
     article_id = db.Column(db.Integer, db.ForeignKey('article.id', ondelete='CASCADE'), nullable=False)

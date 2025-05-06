@@ -240,6 +240,15 @@ class UserById(Resource):
 
         except Exception as e:
             return {"error": str(e)}, 500
+        
+    # def delete(self, id):
+    #     user = db.session.get(User, id)
+    #     if not user:
+    #         return make_response({"error": "User not found"}, 400)
+        
+    #     db.session.delete(user)
+    #     db.session.commit()
+    #     return make_response("", 204)
 
 
 
@@ -329,7 +338,146 @@ class Votes(Resource):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+class CreateFactCheck(Resource):
+    def post(self):
+        try:
+            data = request.get_json()
+            required_fields = ['content']
+            for field in required_fields:
+                if field not in data or not isinstance(data[field], str) or not data[field].strip():
+                    return {"error": f"Invalid or missing field: {field}"}, 400
+            
+            if 'fact_check_level' not in data or not isinstance(data['fact_check_level'], int):
+                return {"error": "Invalid or missing field: fact_check_level"}, 400
+            
+            if 'article_id' not in data or not isinstance(data['article_id'], int):
+                return {"error" : "Article_id must not be null or invalid"}
+            
+            new_fact_check = FactCheck(
+                content=data['content'],
+                fact_check_level=data['fact_check_level'],
+                article_id=data['article_id'],
+                fact_check_url=data.get('fact_check_url')
+            )
 
+            db.session.add(new_fact_check)
+            db.session.commit()
+            return make_response(new_fact_check.to_dict(), 201)
+        
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+class FactCheckById(Resource):
+    def patch(self, id):
+        try:
+            fact_check = db.session.get(FactCheck, id)
+
+            if not fact_check: 
+                return {"error": "FactCheck not found"}, 404
+            
+            data = request.get_json()
+
+            if "fact_check_level" in data:
+                if not isinstance(data['fact_check_level'], int):
+                    return {"error": "fact_check_level must be an integer"}, 400
+                if not (0 <= data["fact_check_level"] <= 4):
+                    return {"error": "fact_check_level must be between 0 and 4"}, 400
+
+                fact_check.fact_check_level = data["fact_check_level"]
+            
+            if "content" in data:
+                if not isinstance(data['content'], str):
+                    return {"error": "Content must be a string"}, 400
+                if not (0 < len(data['content']) <= 2000):  # Content length should be between 1 and 2000
+                    return {"error": "fact check content must be between 1 and 2000 characters"}, 400
+                
+                fact_check.content = data['content']
+            
+            if "fact_check_url" in data:
+                if not isinstance(data['fact_check_url'], str):
+                    return {"error": "fact_check_url must be a string"}, 400
+                if not (0 < len(data['fact_check_url']) <= 255):
+                    return {"error": "fact_check_url must be between 1 and 255 characters"}
+                
+                fact_check.fact_check_url = data['fact_check_url']
+
+            db.session.commit()
+            return fact_check.to_dict(), 200
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+    
+    def delete(self, id):
+        fact_check = db.session.get(FactCheck, id)
+        if not fact_check:
+            return make_response({"error": "FactCheck not found"}, 400)
+        
+        db.session.delete(fact_check)
+        db.session.commit()
+        return make_response("", 204)
+
+        
+class CreateComment(Resource):
+    def post(self):
+        try:
+            data = request.get_json()
+            required_fields = ['content']
+            for field in required_fields:
+                if field not in data or not isinstance(data[field], str) or not data[field].strip():
+                    return {"error": f"Invalid or missing field: {field}"}, 400
+            
+            if 'user_id' not in data or not isinstance(data['user_id'], int):
+                return {"error": "Invalid or missing field: user_id"}, 400
+            
+            if 'article_id' not in data or not isinstance(data['article_id'], int):
+                return {"error" : "Article_id must not be null or invalid"}
+            
+            new_comment = Comment(
+                content=data['content'],
+                user_id=data['user_id'],
+                article_id=data['article_id']
+            )
+
+            db.session.add(new_comment)
+            db.session.commit()
+            return make_response(new_comment.to_dict(), 201)
+        
+        except Exception as e:
+            return {"error": str(e)}, 500
+        
+class CommentById(Resource):
+    def patch(self, id):
+        try:
+            comment = db.session.get(Comment, id)
+
+            if not comment: 
+                return {"error": "Comment not found"}, 404
+            
+            data = request.get_json()
+            
+            if "content" in data:
+                if not isinstance(data['content'], str):
+                    return {"error": "Content must be a string"}, 400
+                if not (0 < len(data['content']) <= 1000):  # Content length should be between 1 and 2000
+                    return {"error": "comment content must be between 1 and 2000 characters"}, 400
+                
+                comment.content = data['content']
+
+            db.session.commit()
+            return comment.to_dict(), 200
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+    
+    def delete(self, id):
+        comment = db.session.get(Comment, id)
+        if not comment:
+            return make_response({"error": "Comment not found"}, 400)
+        
+        db.session.delete(comment)
+        db.session.commit()
+        return make_response("", 204)
+        
 # Add to API
 api.add_resource(Signup, '/signup')
 api.add_resource(CheckSession, '/check_session')
@@ -340,6 +488,10 @@ api.add_resource(ArticleById, '/article/<int:id>')
 api.add_resource(CreateArticle, '/create_article')
 api.add_resource(UserById, '/user/<int:id>')
 api.add_resource(Votes, '/votes/<string:votable_type>/<int:votable_id>')
+api.add_resource(CreateFactCheck, '/create_fact_check')
+api.add_resource(CreateComment, '/create_comment')
+api.add_resource(FactCheckById, '/fact_check/<int:id>')
+api.add_resource(CommentById, '/comment/<int:id>')
 
 
 if __name__ == '__main__':

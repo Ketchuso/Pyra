@@ -30,38 +30,37 @@ def create_users():
 
 # Create sample articles
 def create_articles(users):
-    lorem_text = (
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
-        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-    )
     articles = [
         Article(
-            title=lorem_text,
-            url="https://www.reuters.com/fact-check/ai-images-flooded-disney-world-spread-online-2024-10-15/",
-            image_url="https://www.reuters.com/resizer/v2/RBHHM67HZBDHDGWNKJIIYWWZC4.jpg?auth=0326ec4968945626223b259fbc5e0faba9e7d86b7bd6b51e4a71f6a5958291a9&width=720&quality=80",
+            title="Bystander Becomes ‘Lifesaver’ Leaping into Ocean When Bull Shark Bites Swimmer Off Deserted Beach",
+            url="https://www.goodnewsnetwork.org/bystander-becomes-lifesaver-leaping-into-ocean-when-bull-shark-bites-swimmer-off-deserted-beach/",
+            image_url="https://www.goodnewsnetwork.org/wp-content/uploads/2025/05/A-bull-shark-in-the-Bahamas-public-domain-696x385.jpg",
             submitted_by_id=rc(users).id
         ),
         Article(
-            title=lorem_text,
-            url="https://www.reuters.com/fact-check/al-capone-soup-kitchen-image-is-ai-generated-2024-07-05/",
-            image_url="https://www.reuters.com/resizer/v2/MVXIY6Y3Y5ATDL2LM5KG2WZLAU.jpg?auth=d80c4d2b2b0f1ec860a1689ae1e51673395dfd6ce3c47a76fd0d08fde5c1b445&width=720&quality=80",
+            title="Perpetually-Smiling Endangered Amphibian Now Thrives in Artificial Wetlands in Mexico City",
+            url="https://www.goodnewsnetwork.org/perpetually-smiling-endangered-amphibian-now-thrives-in-artificial-wetlands-in-mexico-city/",
+            image_url="https://www.goodnewsnetwork.org/wp-content/uploads/2025/05/A-captive-bred-leucistic-Axolotl-credit-LaDame-Bucolique-via-Pixabay-e1746429396644-696x416.jpg",
             submitted_by_id=rc(users).id
         ),
-        # Add other articles here...
+        Article(
+            title="Woman Hires Private Detective and Finds 2 Long-Lost Sisters After 44 Years and the Death of Adoptive Parents",
+            url="https://www.goodnewsnetwork.org/woman-hires-private-detective-and-found-2-long-lost-sisters-after-44-years-and-death-of-adoptive-parents/",
+            image_url="https://www.goodnewsnetwork.org/wp-content/uploads/2025/05/Magda-Berg-with-her-two-sisters-Beata-and-Daria-via-SWNS--696x374.jpg",
+            submitted_by_id=rc(users).id
+        ),
+        Article(
+            title="Pollen Replacement Food for Honey Bees Brings New Hope for Struggling Colonies and the Crops They Support",
+            url="https://www.goodnewsnetwork.org/pollen-replacement-food-for-honey-bees-brings-new-hope-for-struggling-colonies-and-the-crops-they-support/",
+            image_url="https://www.goodnewsnetwork.org/wp-content/uploads/2025/05/Honey-beekeeper-inspects-colony-Photo-credit-College-of-Agricultural-Human-and-Natural-Resource-Sciences%E2%80%93WSU--696x375.jpg",
+            submitted_by_id=rc(users).id
+        ),
     ]
     
     # Add more articles if needed
-    for _ in range(5):  # Adjust this number to create more articles
-        article = Article(
-            title=lorem_text,
-            url=f"https://example.com/{fake.uuid4()}/",
-            image_url=f"https://example.com/{fake.uuid4()}.jpg",
-            submitted_by_id=rc(users).id
-        )
-        articles.append(article)
+    for article in articles:
         add_votes_for_articles(article)
+
 
     
     db.session.add_all(articles)
@@ -106,7 +105,6 @@ def create_fact_checks(users, articles):
             fact_check = FactCheck(
                 fact_check_level=rc(fact_levels),
                 content=lorem_text,
-                source=fake.url(),
                 fact_check_url=fake.url(),
                 user_id=rc(users).id,
                 article_id=article.id
