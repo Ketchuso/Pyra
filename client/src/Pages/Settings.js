@@ -138,7 +138,6 @@ function Settings(){
                     <br />
                   </>
                 )}
-      
                 <button className="button-class" type="submit">Submit</button>
               </form>
             </>
