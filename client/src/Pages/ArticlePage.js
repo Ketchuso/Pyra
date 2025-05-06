@@ -7,9 +7,7 @@ function ArticlePage() {
     const [article, setArticle] = useState(null);
     const [loading, setLoading] = useState(true);
     const [userMap, setUserMap] = useState({});
-    const [newVote, setNewVote] = useState(true);
     const [votesMap, setVotesMap] = useState({});
-    const [votableType, setVotableType] = useState("Article");
     const [editArticle, setEditArticle] = useState(false);
     const [newTitle, setNewTitle] = useState('')
     const [newImageUrl, setNewImageUrl] = useState('')
@@ -360,7 +358,7 @@ function ArticlePage() {
             alert("Invalid fact check level: must be a number between 0 and 4");
             return;
         }        
-        
+
         body.fact_check_level = parsedLevel;
 
         if (fact_check_url) {
