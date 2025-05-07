@@ -25,6 +25,12 @@ function ArticlePage() {
     const [updateFactCheckLevel, setUpdateFactCheckLevel] = useState('')
     const [updateFactCheckUrl, setUpdateFactCheckUrl] = useState('')
     const [currentFactCheckId, setCurrentFactCheckId] = useState(null)
+    const [deleteFactCheck, setDeleteFactCheck] = useState(false);
+    const [editComment, setEditComment] = useState(false);
+    const [updateContent, setUpdateContent] = useState('')
+    const [currentCommentId, setCurrentCommentId] = useState(null);
+    const [deleteComment, setDeleteComment] = useState(false);
+    const [reloadFlag, setReloadFlag] = useState(false);
 
 
     const formatDate = (dateString) => {
@@ -101,7 +107,7 @@ function ArticlePage() {
         }
 
         fetchArticleAndUsers();
-    }, [id]);
+    }, [id, reloadFlag]);
 
     useEffect(() => {
         async function getVotes() {
@@ -192,6 +198,7 @@ function ArticlePage() {
 
     function onAddComment(){
         setAddComment(!addComment);
+        setContent('');
     }
 
     function onFactCheck(){
@@ -207,6 +214,22 @@ function ArticlePage() {
         setUpdateFactCheckLevel('');
         setUpdateFactCheckUrl('');
         setCurrentFactCheckId(id)
+    }
+
+    function onDeleteFactCheck(id){
+        setDeleteFactCheck(!deleteFactCheck);
+        setCurrentFactCheckId(id)
+    }
+
+    function onEditComment(id){
+        setEditComment(!editComment);
+        setUpdateContent('');
+        setCurrentCommentId(id);
+    }
+
+    function onDeleteComment(id){
+        setDeleteComment(!deleteComment);
+        setCurrentCommentId(id);
     }
 
     if (loading) {
@@ -258,6 +281,8 @@ function ArticlePage() {
             alert("Sorry something went wrong on our end");
             console.error("Error updating post:", err);
         });
+
+        setReloadFlag(prev => !prev);
     }    
 
     function removeArticle() {
@@ -283,6 +308,8 @@ function ArticlePage() {
             alert("Sorry something went wrong on our end");
             console.error("Error deleting post:", err);
         });
+
+        setReloadFlag(prev => !prev);
     }
 
     function submitComment(e) {
@@ -320,12 +347,10 @@ function ArticlePage() {
             if (r.ok) {
                 alert("Successfully posted a new comment!");
                 console.log("Created comment:", data);
-                setContent('');
                 onAddComment();
             } else {
                 alert("Sorry something went wrong");
                 console.log("Server error:", data);
-                setContent('');
                 onAddComment();
             }
         })
@@ -334,6 +359,7 @@ function ArticlePage() {
             console.error("Error creating comment:", err);
             onAddComment();
         });        
+        setReloadFlag(prev => !prev);
     }
     
     function submitFactCheck(e) {
@@ -402,6 +428,7 @@ function ArticlePage() {
             console.error("Error creating fact check:", err)
             onFactCheck();
         })
+        setReloadFlag(prev => !prev);
     }
 
     function updateFactCheck(e) {
@@ -440,12 +467,14 @@ function ArticlePage() {
                     alert("Successfully updated fact Check!");
                     console.log("Updated Info:", data);
                     setCurrentFactCheckId(null)
+                    onEditFactCheck();
                 });
             } else {
                 return r.json().then(error => {
                     alert("Something went wrong");
                     console.log("Server error:", error);
                     setCurrentFactCheckId(null)
+                    onEditFactCheck();
                 });
             }
         })
@@ -453,8 +482,113 @@ function ArticlePage() {
             alert("Sorry something went wrong on our end");
             console.error("Error updating fact check:", err);
             setCurrentFactCheckId(null)
+            onEditFactCheck();
         });
+        setReloadFlag(prev => !prev);
     }    
+
+    function removeFactCheck() {
+        fetch(`/fact_check/${currentFactCheckId}`, {
+            method: "DELETE",
+        })
+        .then(async r => {
+            if (r.ok) {
+                if (r.status !== 204) {
+                    const data = await r.json();
+                    console.log("Deleted Info:", data);
+                }
+                alert("Successfully deleted fact check!");
+                setCurrentFactCheckId(null);
+                onDeleteFactCheck();
+            } else {
+                const error = await r.json();
+                alert("Something went wrong");
+                console.log("Server error:", error);
+                setCurrentFactCheckId(null);
+                onDeleteFactCheck();
+            }
+        })
+        .catch(err => {
+            alert("Sorry something went wrong on our end");
+            console.error("Error deleting post:", err);
+            setCurrentFactCheckId(null);
+        });
+        setReloadFlag(prev => !prev);
+    }
+
+    function updateComment(e) {
+        e.preventDefault();
+    
+        const updatedField = {};
+        if (updateContent?.trim()) updatedField.content = updateContent.trim();
+        
+        if (Object.keys(updatedField).length === 0) {
+            alert("No changes to update.");
+            return;
+        }
+    
+        fetch(`/comment/${currentCommentId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedField),
+        })
+        .then(r => {
+            if (r.ok) {
+                return r.json().then(data => {
+                    alert("Successfully updated comment!");
+                    console.log("Updated Info:", data);
+                    setCurrentCommentId(null);
+                    setEditComment(false);
+                });
+            } else {
+                return r.json().then(error => {
+                    alert("Something went wrong");
+                    console.log("Server error:", error);
+                    setCurrentCommentId(null);
+                    setEditComment(false);
+                });
+            }
+        })
+        .catch(err => {
+            alert("Sorry something went wrong on our end");
+            console.error("Error updating comment:", err);
+            setCurrentCommentId(null);
+            setEditComment(false);
+        });
+        setReloadFlag(prev => !prev);
+    }    
+
+    function removeComment() {
+        fetch(`/comment/${currentCommentId}`, {
+            method: "DELETE",
+        })
+        .then(async r => {
+            if (r.ok) {
+                if (r.status !== 204) {
+                    const data = await r.json();
+                    console.log("Deleted Info:", data);
+                }
+                alert("Successfully comment!");
+                onDeleteComment()
+                setCurrentCommentId(null);
+            } else {
+                const error = await r.json();
+                alert("Something went wrong");
+                console.log("Server error:", error);
+                onDeleteComment()
+                setCurrentCommentId(null);
+            }
+        })
+        .catch(err => {
+            alert("Sorry something went wrong on our end");
+            console.error("Error deleting post:", err);
+            onDeleteComment()
+            setCurrentCommentId(null);
+        });
+        setReloadFlag(prev => !prev);
+    }
 
     return (
         <div className="individual-article">
@@ -606,6 +740,45 @@ function ArticlePage() {
                         </form>
                     </div>
                 )}
+                {deleteFactCheck && (
+                    <div className="form-container">
+                        <h1>Are you Sure you would like to this?</h1>
+                        <h3>You can't undo a deleted FactCheck</h3>
+                        <div>
+                            <button onClick={() => removeFactCheck()} className="button-class">finish them</button>
+                            <button onClick={() => onDeleteFactCheck()} className="button-class">go back</button>
+                        </div>
+                    </div>
+                )}
+                {editComment && (
+                    <div className="form-container">
+                        <button onClick={() => onEditComment()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <form onSubmit={e => updateComment(e)}>
+                            <label>
+                                Content:
+                                <input
+                                type="text"
+                                name="comment content"
+                                placeholder="content..."
+                                onChange={e => setUpdateContent(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <button className="button-class" type="submit">Submit</button>
+                            <h4>Refresh page to see changes</h4>
+                        </form>
+                    </div>
+                )}
+                {deleteComment && (
+                    <div className="form-container">
+                        <h1>Are you Sure you would like to this?</h1>
+                        <h3>You can't undo a deleted Comment</h3>
+                        <div>
+                            <button onClick={() => removeComment()} className="button-class">finish them</button>
+                            <button onClick={() => onDeleteComment()} className="button-class">go back</button>
+                        </div>
+                    </div>
+                )}
             <a href={article.url} className="individual-article-link">
                 <div className="article-container">
                     <h1 className="article-title">{article.title}</h1>
@@ -648,6 +821,7 @@ function ArticlePage() {
                                 {user && user.id === fact_check.user_id && (
                                     <>
                                         <button onClick={() => onEditFactCheck(fact_check.id)} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg></button>
+                                        <button onClick={() => onDeleteFactCheck(fact_check.id)} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg></button>
                                     </>
                                 )}
                             </div>
@@ -682,6 +856,32 @@ function ArticlePage() {
                             <div>
                                 <button className="button-class" onClick={() => updateVotes('Comment', comment.id, 'like')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>{votesMap[`Comment-${comment.id}`]?.likes || 0}</button>
                                 <button className="button-class" onClick={() => updateVotes('Comment', comment.id, 'dislike')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>{votesMap[`Comment-${comment.id}`]?.dislikes || 0}</button>
+                                {user && user.id === comment.user_id && (
+                                    <>
+                                        <button onClick={() => onEditComment(comment.id)} className="button-class">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            height="24px"
+                                            viewBox="0 -960 960 960"
+                                            width="24px"
+                                            fill="#e3e3e3"
+                                        >
+                                            <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+                                        </svg>
+                                        </button>
+                                        <button onClick={() => onDeleteComment(comment.id)} className="button-class">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            height="24px"
+                                            viewBox="0 -960 960 960"
+                                            width="24px"
+                                            fill="#e3e3e3"
+                                        >
+                                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                                        </svg>
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))

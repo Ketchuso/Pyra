@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
 
 function AddArticle(){
     const { user } = useOutletContext();
     const [newTitle, setNewTitle] = useState('')
     const [newImageUrl, setNewImageUrl] = useState('')
     const [newArticleUrl, setNewArticleUrl] = useState('')
+    const navigate = useNavigate();
 
     function handleSubmit(e){
         e.preventDefault();
@@ -26,6 +27,7 @@ function AddArticle(){
                 return r.json().then(data => {
                     alert("Successfully posted a new article!");
                     console.log("Created article:", data);
+                    navigate("/?sort=new")
                 });
             } else {
                 return r.json().then(error => {
