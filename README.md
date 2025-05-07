@@ -23,6 +23,3 @@ The overall mission for Pyra is to create an environment that tries to filter ou
 - adding some more styling, make it look more polished
 - publish it for public use
 - adding minimal ads to the site to monetize and hopefully turn this into something bigger
-
-## Contribution
-This was a solo project, but anyone who wishes to help me add onto it, feel free to message me (Ketchuso) and I'll figure it out
