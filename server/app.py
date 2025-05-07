@@ -357,7 +357,8 @@ class CreateFactCheck(Resource):
                 content=data['content'],
                 fact_check_level=data['fact_check_level'],
                 article_id=data['article_id'],
-                fact_check_url=data.get('fact_check_url')
+                fact_check_url=data.get('fact_check_url'),
+                user_id = data.get('user_id')
             )
 
             db.session.add(new_fact_check)
