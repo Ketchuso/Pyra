@@ -101,7 +101,7 @@ function Home() {
                                         {
                                             article.fact_checks?.length > 0
                                             ? article.fact_checks
-                                                .slice() // avoid mutating original array
+                                                .slice() 
                                                 .sort((a, b) => b.hotness - a.hotness)[0].fact_check_level_label
                                             : "Unverified"
                                         }

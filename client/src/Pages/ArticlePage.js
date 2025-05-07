@@ -20,6 +20,11 @@ function ArticlePage() {
     const [factCheckContent, setFactCheckContent] = useState('');
     const [factCheckLevel, setFactCheckLevel] = useState('')
     const [fact_check_url, setFactCheckUrl] = useState('')
+    const [editFactCheck, setEditFactCheck] = useState(false)
+    const [updateFactCheckContent, setUpdateFactCheckContent] = useState('')
+    const [updateFactCheckLevel, setUpdateFactCheckLevel] = useState('')
+    const [updateFactCheckUrl, setUpdateFactCheckUrl] = useState('')
+    const [currentFactCheckId, setCurrentFactCheckId] = useState(null)
 
 
     const formatDate = (dateString) => {
@@ -194,6 +199,14 @@ function ArticlePage() {
         setFactCheckContent('');
         setFactCheckLevel('');
         setFactCheckUrl('');
+    }
+
+    function onEditFactCheck(id){
+        setEditFactCheck(!editFactCheck);
+        setUpdateFactCheckContent('');
+        setUpdateFactCheckLevel('');
+        setUpdateFactCheckUrl('');
+        setCurrentFactCheckId(id)
     }
 
     if (loading) {
@@ -389,8 +402,59 @@ function ArticlePage() {
             console.error("Error creating fact check:", err)
             onFactCheck();
         })
-        
     }
+
+    function updateFactCheck(e) {
+        e.preventDefault();
+    
+        let parsedLevel;
+        const updatedFields = {};
+        if (updateFactCheckContent?.trim()) updatedFields.content = updateFactCheckContent.trim();
+        if (updateFactCheckLevel?.trim()) parsedLevel = parseInt(updateFactCheckLevel.trim());
+        if (updateFactCheckUrl?.trim()) updatedFields.fact_check_url = updateFactCheckUrl.trim();
+
+        if (parsedLevel){
+            if (isNaN(parsedLevel) || parsedLevel < 0 || parsedLevel > 4) {
+                alert("Invalid fact check level: must be a number between 0 and 4");
+                return;
+            }        
+    
+            updatedFields.fact_check_level = parsedLevel;
+        }
+        
+        if (Object.keys(updatedFields).length === 0) {
+            alert("No changes to update.");
+            return;
+        }
+    
+        fetch(`/fact_check/${currentFactCheckId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedFields),
+        })
+        .then(r => {
+            if (r.ok) {
+                return r.json().then(data => {
+                    alert("Successfully updated fact Check!");
+                    console.log("Updated Info:", data);
+                    setCurrentFactCheckId(null)
+                });
+            } else {
+                return r.json().then(error => {
+                    alert("Something went wrong");
+                    console.log("Server error:", error);
+                    setCurrentFactCheckId(null)
+                });
+            }
+        })
+        .catch(err => {
+            alert("Sorry something went wrong on our end");
+            console.error("Error updating fact check:", err);
+            setCurrentFactCheckId(null)
+        });
+    }    
 
     return (
         <div className="individual-article">
@@ -503,6 +567,45 @@ function ArticlePage() {
                         </form>
                     </div>
                 )}
+                {editFactCheck && (
+                    <div className="form-container">
+                        <button onClick={() => onEditFactCheck()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <form onSubmit={e => updateFactCheck(e)}>
+                            <label>
+                                Content:
+                                <input
+                                type="text"
+                                name="fact check content"
+                                placeholder="content..."
+                                onChange={e => setUpdateFactCheckContent(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <label>
+                                Fact Check Level:
+                                <input
+                                type="text"
+                                name="fact check level"
+                                placeholder="0-4, (0 = Unverified, 4 = verified)"
+                                onChange={e => setUpdateFactCheckLevel(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <label>
+                                Fact Check Url:
+                                <input
+                                type="text"
+                                name="fact check url"
+                                placeholder="something to back up your fact check"
+                                onChange={e => setUpdateFactCheckUrl(e.target.value)}
+                                />
+                            </label>
+                            <br />
+                            <button className="button-class" type="submit">Submit</button>
+                            <h4>Refresh page to see changes</h4>
+                        </form>
+                    </div>
+                )}
             <a href={article.url} className="individual-article-link">
                 <div className="article-container">
                     <h1 className="article-title">{article.title}</h1>
@@ -542,6 +645,11 @@ function ArticlePage() {
                             <div>
                                 <button className="button-class" onClick={() => updateVotes('FactCheck', fact_check.id, 'like')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>{votesMap[`FactCheck-${fact_check.id}`]?.likes || 0}</button>
                                 <button className="button-class" onClick={() => updateVotes('FactCheck', fact_check.id, 'dislike')}><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>{votesMap[`FactCheck-${fact_check.id}`]?.dislikes || 0}</button>
+                                {user && user.id === fact_check.user_id && (
+                                    <>
+                                        <button onClick={() => onEditFactCheck(fact_check.id)} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg></button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))

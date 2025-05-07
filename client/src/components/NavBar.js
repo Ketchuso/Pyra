@@ -12,7 +12,6 @@ function NavBar({ setUser, user }) {
   const isHomePage = location.pathname === "/" && ["news", "uplifting", null].includes(currentFilter);
 
   const [isDropdownVisible, setDropdownVisible] = useState(false);
-  const [showForm, setShowForm] = useState(false);
 
 
   // Redirect to default filter/sort if none is present
