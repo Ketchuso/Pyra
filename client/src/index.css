@@ -86,8 +86,6 @@ a{
   font-weight: bold;
 }
 
-
-
 #nav-logo:hover {
   transform: scale(1.1);
 }
@@ -116,10 +114,28 @@ a{
 }
 
 #settings svg path {
-  fill: #e3e3e3; /* Default color for path */
+  fill: #e3e3e3;
 }
 
 #settings:hover svg path {
+  fill: var(--main-color);
+}
+
+#add-article {
+  border: 2px solid #e3e3e3; /* Adjust the width and color as needed */
+  padding: 2px; /* Optional: for spacing around the SVG */
+  border-radius: 8px; /* Optional: to round the corners */
+}
+
+#add-article svg path {
+  fill: #e3e3e3;
+}
+
+#add-article:hover {
+  border-color: var(--main-color); /* Border color on hover */
+}
+
+#add-article:hover svg path {
   fill: var(--main-color);
 }
 
@@ -192,6 +208,10 @@ a{
 .button-class:hover {
   background-color: var(--bg);
   border-color: var(--bg);
+}
+
+.exit{
+  margin-right: -90%;
 }
 
 /* Main Page */
@@ -370,11 +390,19 @@ a{
 
 .comment-meta,
 .comment-user {
-  margin-top: auto;
   font-size: 0.9rem;
   color: var(--third-color);
   text-shadow: none;
 }
+
+.comment-meta {
+  font-size: 0.9rem;
+  color: var(--third-color);
+  text-shadow: none;
+  margin-top: 0.5rem; /* Add some space above the meta info */
+  align-self: flex-start; /* Ensure it aligns with the start of the comment */
+}
+
 
 /* Forms */
 .form-container {

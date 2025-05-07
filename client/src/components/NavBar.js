@@ -70,7 +70,7 @@ function NavBar({ setUser, user }) {
         
         {/* Show filter only when on the homepage */}
         {isHomePage && (
-          <div className="dropdown">
+          <div className="dropdown nav-text">
             <button className="dropbtn" onClick={toggleDropdown}>
               Sort
             </button>
@@ -88,7 +88,7 @@ function NavBar({ setUser, user }) {
         {user && (
           <NavLink
             to="add-article"
-            className="nav-text"
+            id="add-article"
           >
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
           </NavLink>
