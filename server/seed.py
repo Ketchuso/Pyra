@@ -67,86 +67,6 @@ def create_articles(users):
     db.session.commit()
     return articles
 
-# Create sample comments
-def create_comments(users, articles):
-    lorem_text = (
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
-        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-    )
-    comments = []
-    
-    if len(articles) > 1:  # Ensure we have more than one article
-        for _ in range(30):
-            comment = Comment(
-                content=lorem_text,
-                user_id=rc(users).id,
-                article_id=rc(articles[:-1]).id  # Exclude the last article
-            )
-            comments.append(comment)
-
-        db.session.add_all(comments)
-        db.session.commit()
-
-# Create sample fact checks
-def create_fact_checks(users, articles):
-    lorem_text = (
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
-        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-    )
-    fact_levels = [1, 2, 3, 4, 5]
-    fact_checks = []
-
-    for article in articles[:-1]:  # Exclude the last article
-        for _ in range(7):
-            fact_check = FactCheck(
-                fact_check_level=rc(fact_levels),
-                content=lorem_text,
-                fact_check_url=fake.url(),
-                user_id=rc(users).id,
-                article_id=article.id
-            )
-            fact_checks.append(fact_check)
-
-            # Add random upvotes/downvotes for each fact check
-            add_votes_for_fact_check(fact_check)
-
-    db.session.add_all(fact_checks)
-    db.session.commit()
-
-def add_votes_for_fact_check(fact_check):
-    # Ensure fact_check is added to the session before using its ID
-    db.session.add(fact_check)
-    db.session.flush()  # This will flush the fact_check object to the database and assign it an ID
-
-    # Random number of upvotes and downvotes
-    num_upvotes = randint(5, 15)  # Upvotes between 5 and 15
-    num_downvotes = randint(0, 5)  # Downvotes between 0 and 5
-    
-    # Create upvotes
-    for _ in range(num_upvotes):
-        vote = Vote(
-            votable_id=fact_check.id, 
-            votable_type='FactCheck', 
-            value=1, 
-            user_id=rc([user.id for user in User.query.all()])
-        )
-        db.session.add(vote)
-
-    # Create downvotes
-    for _ in range(num_downvotes):
-        vote = Vote(
-            votable_id=fact_check.id, 
-            votable_type='FactCheck', 
-            value=-1, 
-            user_id=rc([user.id for user in User.query.all()])
-        )
-        db.session.add(vote)
-
-    db.session.commit()  # Commit all the votes
 
 def add_votes_for_articles(article):
     # Ensure fact_check is added to the session before using its ID
@@ -193,8 +113,6 @@ def run_seed():
         # Populate with data
         users = create_users()
         articles = create_articles(users)
-        create_comments(users, articles)
-        create_fact_checks(users, articles)
 
         print("Database seeded successfully!")
 

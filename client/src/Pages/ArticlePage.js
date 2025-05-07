@@ -595,7 +595,7 @@ function ArticlePage() {
             
                 {editArticle && (
                     <div className="form-container">
-                        <button onClick={() => onEditClick()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <button onClick={() => onEditClick()} className="button-class exit"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
                         <form onSubmit={e => updateArticle(e)}>
                             <label>
                                 Title:
@@ -645,7 +645,7 @@ function ArticlePage() {
                 )}
                 {addComment && (
                     <div className="form-container">
-                        <button onClick={() => onAddComment()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <button onClick={() => onAddComment()} className="button-class exit"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
                         <form onSubmit={e => submitComment(e)}>
                             <label>
                                 Comment:
@@ -664,7 +664,7 @@ function ArticlePage() {
                 )}
                 {addFactCheck && (
                     <div className="form-container">
-                        <button onClick={() => onFactCheck()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <button onClick={() => onFactCheck()} className="button-class exit"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
                         <form onSubmit={e => submitFactCheck(e)}>
                             <label>
                                 Content:
@@ -703,7 +703,7 @@ function ArticlePage() {
                 )}
                 {editFactCheck && (
                     <div className="form-container">
-                        <button onClick={() => onEditFactCheck()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <button onClick={() => onEditFactCheck()} className="button-class exit"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
                         <form onSubmit={e => updateFactCheck(e)}>
                             <label>
                                 Content:
@@ -752,7 +752,7 @@ function ArticlePage() {
                 )}
                 {editComment && (
                     <div className="form-container">
-                        <button onClick={() => onEditComment()} className="button-class"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                        <button onClick={() => onEditComment()} className="button-class exit"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
                         <form onSubmit={e => updateComment(e)}>
                             <label>
                                 Content:
