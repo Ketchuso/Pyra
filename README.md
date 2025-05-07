@@ -17,3 +17,12 @@ Pyra is a site that gives people an area to discuss articles and fact check them
 
 ## The Mission
 The overall mission for Pyra is to create an environment that tries to filter out the biases of major news networks, by letting fact checking and discussions be done by anyone who wishes
+
+## Roadmap
+- adding more security to the links and user submitted info in general
+- adding some more styling, make it look more polished
+- publish it for public use
+- adding minimal ads to the site to monetize and hopefully turn this into something bigger
+
+## Contribution
+This was a solo project, but anyone who wishes to help me add onto it, feel free to message me (Ketchuso) and I'll figure it out
