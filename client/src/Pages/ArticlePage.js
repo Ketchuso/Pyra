@@ -137,8 +137,8 @@ function ArticlePage() {
 
     async function updateVotes(type, id, voteType) {
         try {
-            if (!user.id) {
-                console.error('No user logged in');
+            if (!user) {
+                alert("You have to be logged in to vote")
                 return;
             }
     
